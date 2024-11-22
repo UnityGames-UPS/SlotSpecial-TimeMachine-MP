@@ -5,6 +5,7 @@ using DG.Tweening;
 using UnityEngine.UI;
 using System.Linq;
 using System;
+using TMPro;
 
 public class SlotController : MonoBehaviour
 {
@@ -28,10 +29,13 @@ public class SlotController : MonoBehaviour
     [SerializeField] private RectTransform mask_transform;
     [SerializeField] private RectTransform bg_mask_transform;
     [SerializeField] private RectTransform[] bg_slot_transform;
-    [SerializeField] private RectTransform bg_transform;
     [SerializeField] private RectTransform[] sideBars;
+    [SerializeField] private ImageAnimation[] sideBarsAnim;
+
+    [SerializeField] private RectTransform[] horizontalBars;
     [SerializeField] internal int level;
 
+    [SerializeField] private TMP_Text noOfWays;
 
     [Header("tween properties")]
     [SerializeField] private float tweenHeight = 0;
@@ -56,7 +60,7 @@ public class SlotController : MonoBehaviour
 
         }
 
-        yield return new WaitForSeconds(0.3f);
+        yield return new WaitForSeconds(0.2f);
     }
 
     internal void PopulateSLotMatrix(List<List<int>> resultData)
@@ -72,16 +76,6 @@ public class SlotController : MonoBehaviour
             }
             matrixRowCount++;
         }
-
-        // for (int j = 0; j < slotMatrix[0].slotImages.Count; j++)
-        // {
-        //     for (int i = 0; i < slotMatrix.Count; i++)
-        //     {
-
-        //         slotMatrix[i].slotImages[j].iconImage.sprite = iconImages[resultData[j][i]];
-        //     }
-        // }
-
     }
     internal IEnumerator StopSpin()
     {
@@ -112,6 +106,33 @@ public class SlotController : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            ResizeSlotMatrix(1);
+        }
+        if (Input.GetKeyDown(KeyCode.X))
+        {
+            ResizeSlotMatrix(2);
+
+        }
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            ResizeSlotMatrix(3);
+
+        }
+        if (Input.GetKeyDown(KeyCode.V))
+        {
+            ResizeSlotMatrix(4);
+
+        }
+        if (Input.GetKeyDown(KeyCode.B))
+        {
+            ResizeSlotMatrix(0);
+
+        }
+    }
     internal void ResizeSlotMatrix(int levelCount)
     {
 
@@ -119,30 +140,51 @@ public class SlotController : MonoBehaviour
         {
             for (int i = 0; i < 5; i++)
             {
-                slotMatrix[i].slotImages[4 - levelCount].iconImage.sprite = iconImages[UnityEngine.Random.Range(0, 9)];
+                if (i == 0)
+                    slotMatrix[i].slotImages[4 - levelCount].iconImage.sprite = iconImages[UnityEngine.Random.Range(0, 4)];
+                else
+                    slotMatrix[i].slotImages[4 - levelCount].iconImage.sprite = iconImages[UnityEngine.Random.Range(4, 9)];
             }
         }
 
         level = levelCount;
-        if(level==1){
+        if (level == 1)
+        {
             levelIndicator[0].gameObject.SetActive(true);
-            levelIndicator[0].DOColor(Color.white,1f) ;
-        }else if(level==2){
-              levelIndicator[1].gameObject.SetActive(true);
-            levelIndicator[1].DOColor(Color.white,1f) ;
+            levelIndicator[0].DOColor(Color.white, 1f);
+            noOfWays.text = $"1024\nways";
+        }
+        else if (level == 2)
+        {
+            levelIndicator[1].gameObject.SetActive(true);
+            levelIndicator[1].DOColor(Color.white, 1f);
+            noOfWays.text = $"3125\nways";
 
-        }else if(level==3){
+
+        }
+        else if (level == 3)
+        {
             levelIndicator[2].gameObject.SetActive(true);
-            levelIndicator[2].DOColor(Color.white,1f) ;
+            levelIndicator[2].DOColor(Color.white, 1f);
+            noOfWays.text = $"7776\nways";
 
-        }else if(level==4){
+
+        }
+        else if (level == 4)
+        {
             levelIndicator[3].gameObject.SetActive(true);
-            levelIndicator[3].DOColor(Color.white,1f) ;
+            levelIndicator[3].DOColor(Color.white, 1f);
+            noOfWays.text = $"16807\nways";
 
-        }else if(level ==0){
+
+        }
+        else if (level == 0)
+        {
+            noOfWays.text = $"243\nways";
+
             foreach (var item in levelIndicator)
             {
-                item.color= new Color(1,1,1,0);
+                item.color = new Color(1, 1, 1, 0);
                 item.gameObject.SetActive(false);
             }
         }
@@ -157,17 +199,41 @@ public class SlotController : MonoBehaviour
         tweenHeight = reelHeight + initialPos;
         mask_transform.DOSizeDelta(sizeDelta, 1f);
         bg_mask_transform.DOSizeDelta(sizeDelta, 1f);
-        bg_mask_transform.DOSizeDelta(sizeDelta, 1f);
 
-        if (level == 0)
+        float offset = iconWidth * 2 + 35;
+        bool animateSideBars = true;
+
+        if (level == 4)
         {
-            sideBars[0].DOLocalMoveX(iconWidth * 2 + 35, 1f);
-            sideBars[1].DOLocalMoveX(-iconWidth * 2 - 35, 1f);
+            offset = 210;
+            foreach (var item in horizontalBars)
+            {
+                item.sizeDelta = new Vector2(820, 40);
+            }
+        }
+        else if (level > 0)
+        {
+            offset = iconWidth * 2 - (level - 1) * 20;
         }
         else
         {
-            sideBars[0].DOLocalMoveX(iconWidth * 2 - (level - 1) * 20, 1f);
-            sideBars[1].DOLocalMoveX(-iconWidth * 2 + (level - 1) * 20, 1f);
+            animateSideBars = false;
+            foreach (var item in horizontalBars)
+            {
+                item.sizeDelta = new Vector2(890, 40);
+            }
+        }
+
+        sideBars[0].DOLocalMoveX(offset, 1f);
+        sideBars[1].DOLocalMoveX(-offset, 1f);
+
+        if (animateSideBars)
+        {
+            foreach (var anim in sideBarsAnim)
+            {
+                anim.StopAnimation();
+                anim.StartAnimation();
+            }
         }
 
         for (int i = 0; i < Slot_Transform.Length; i++)
@@ -243,7 +309,7 @@ public class SlotController : MonoBehaviour
     private void InitializeTweening(Transform slotTransform)
     {
         // slotTransform.localPosition = new Vector2(slotTransform.localPosition.x, 0);
-        Tweener tweener = slotTransform.DOLocalMoveY(-tweenHeight, 0.17f).SetLoops(-1, LoopType.Restart).SetDelay(0);
+        Tweener tweener = slotTransform.DOLocalMoveY(-tweenHeight, 0.15f).SetLoops(-1, LoopType.Restart).SetDelay(0);
         alltweens.Add(tweener);
         // tweener.Play();
     }
@@ -252,7 +318,7 @@ public class SlotController : MonoBehaviour
     {
         alltweens[index].Pause();
         slotTransform.localPosition = new Vector2(slotTransform.localPosition.x, initialPos + 265);
-        alltweens[index] = slotTransform.DOLocalMoveY(initialPos, 0.5f).SetEase(Ease.OutElastic); // slot initial pos - iconsizefactor - spacing
+        alltweens[index] = slotTransform.DOLocalMoveY(initialPos, 0.2f).SetEase(Ease.OutElastic); // slot initial pos - iconsizefactor - spacing
 
     }
 

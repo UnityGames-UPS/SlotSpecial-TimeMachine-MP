@@ -15,12 +15,8 @@ public class GameManager : MonoBehaviour
 
     [Header("For spins")]
     [SerializeField] private Button SlotStart_Button;
-    [SerializeField] private Button Maxbet_button;
-    [SerializeField] private Button BetMinus_Button;
-    [SerializeField] private Button BetPlus_Button;
     [SerializeField] private Button ToatlBetMinus_Button;
     [SerializeField] private Button TotalBetPlus_Button;
-    [SerializeField] private TMP_Text betPerLine_text;
     [SerializeField] private TMP_Text totalBet_text;
     [SerializeField] private bool isSpinning;
     [SerializeField] private TMP_Text gameStateText;
@@ -38,8 +34,6 @@ public class GameManager : MonoBehaviour
     List<int> autoOptions = new List<int>() { 15, 20, 25, 30, 40, 100 };
 
 
-    [Header("For Gamble")]
-    [SerializeField] private Button Double_Button;
 
     [Header("For FreeSpins")]
     [SerializeField] private bool specialSpin;
@@ -52,15 +46,11 @@ public class GameManager : MonoBehaviour
 
     private Coroutine autoSpinRoutine;
     private Coroutine freeSpinRoutine;
-    private Coroutine iterativeRoutine;
-    [SerializeField] private int wildPosition;
-    [SerializeField] private int maxIterationWinShow;
     [SerializeField] private int winIterationCount;
 
     [SerializeField] private int freeSpinCount;
 
     [SerializeField] private bool isFreeSpin;
-    [SerializeField] private List<ImageAnimation> VHcomboList;
 
 
     private bool initiated;
@@ -74,11 +64,8 @@ public class GameManager : MonoBehaviour
             uIManager.ClosePopup();
         }, true);
         SetButton(AutoSpinStop_Button, () => StartCoroutine(StopAutoSpinCoroutine()));
-        SetButton(BetPlus_Button, () => OnBetChange(true));
-        SetButton(BetMinus_Button, () => OnBetChange(false));
         SetButton(ToatlBetMinus_Button, () => OnBetChange(false));
         SetButton(TotalBetPlus_Button, () => OnBetChange(true));
-        SetButton(Maxbet_button, MaxBet);
         SetButton(autoSpinUp, () => OnAutoSpinChange(true));
         SetButton(autoSpinDown, () => OnAutoSpinChange(false));
         SetButton(freeSpinStartButton, () => freeSpinRoutine = StartCoroutine(FreeSpinRoutine()));
@@ -119,7 +106,7 @@ public class GameManager : MonoBehaviour
             currentTotalBet = socketController.socketModel.initGameData.Bets[betCounter];
             currentBalance = socketController.socketModel.playerData.Balance;
             if (totalBet_text) totalBet_text.text = currentTotalBet.ToString();
-            if (betPerLine_text) betPerLine_text.text = socketController.socketModel.initGameData.Bets[betCounter].ToString();
+            // if (betPerLine_text) betPerLine_text.text = socketController.socketModel.initGameData.Bets[betCounter].ToString();
             // PayLineCOntroller.paylines = socketController.socketModel.initGameData.lineData;
             uIManager.UpdatePlayerInfo(socketController.socketModel.playerData);
             uIManager.PopulateSymbolsPayout(socketController.socketModel.uIData);
@@ -156,6 +143,8 @@ public class GameManager : MonoBehaviour
     IEnumerator FreeSpinRoutine()
     {
         uIManager.ToggleFreeSpinPanel(true);
+        uIManager.EnablePurplebar(true);
+        uIManager.CloseFreeSpinPopup();
         while (freeSpinCount > 0)
         {
             freeSpinCount--;
@@ -165,7 +154,12 @@ public class GameManager : MonoBehaviour
             yield return new WaitForSeconds(1);
         }
         slotManager.ResizeSlotMatrix(0);
+        audioController.PlaySizeUpSound(true);
+        uIManager.EnablePurplebar(false);
         yield return new WaitForSeconds(1f);
+        audioController.playBgAudio("FP");
+        audioController.PlaySizeUpSound(false);
+
         uIManager.ToggleFreeSpinPanel(false);
 
         ToggleButtonGrp(true);
@@ -239,7 +233,9 @@ public class GameManager : MonoBehaviour
         yield return OnSpinEnd();
         if (socketController.socketModel.resultGameData.isFreeSpin)
         {
+            int prevFreeSpin = freeSpinCount;
             freeSpinCount = socketController.socketModel.resultGameData.freeSpinCount;
+            uIManager.UpdateFreeSpinInfo(freeSpinCount);
             isFreeSpin = true;
             specialSpin = false;
             if (autoSpinRoutine != null)
@@ -251,19 +247,24 @@ public class GameManager : MonoBehaviour
             {
                 StopCoroutine(freeSpinRoutine);
                 freeSpinStartButton.gameObject.SetActive(false);
-                uIManager.FreeSpinPopup(freeSpinCount);
+                uIManager.FreeSpinPopup(freeSpinCount - prevFreeSpin,false);
                 yield return new WaitForSeconds(2f);
-                uIManager.ClosePopup();
+                uIManager.CloseFreeSpinPopup();
                 freeSpinStartButton.gameObject.SetActive(true);
                 freeSpinRoutine = StartCoroutine(FreeSpinRoutine());
             }
             else
-                uIManager.FreeSpinPopup(freeSpinCount);
+            {
+
+                uIManager.FreeSpinPopup(freeSpinCount,true);
+                audioController.playBgAudio("FP");
+            }
 
             yield break;
         }
         if (specialSpin)
         {
+            uIManager.FreeSpinTextAnim();
             yield return SpinRoutine();
         }
 
@@ -316,8 +317,10 @@ public class GameManager : MonoBehaviour
         audioController.StopSpinAudio();
         if (socketController.socketModel.resultGameData.symbolsToEmit.Count > 0)
         {
+            audioController.PlayWLAudio("electric");
             slotManager.StartIconAnimation(Helper.RemoveDuplicates(socketController.socketModel.resultGameData.symbolsToEmit), socketController.socketModel.resultGameData.resultSymbols.Count);
-            yield return new WaitForSeconds(3f);
+            yield return new WaitForSeconds(1.5f);
+            audioController.StopWLAaudio();
         }
 
         uIManager.UpdatePlayerInfo(socketController.socketModel.playerData);
@@ -330,7 +333,7 @@ public class GameManager : MonoBehaviour
             {
                 audioController.PlaySizeUpSound(true);
                 slotManager.ResizeSlotMatrix(socketController.socketModel.resultGameData.level);
-                yield return new WaitForSeconds(1f);
+                yield return new WaitForSeconds(1.5f);
                 audioController.PlaySizeUpSound(false);
             }
             else
@@ -339,7 +342,7 @@ public class GameManager : MonoBehaviour
                 {
                     audioController.PlaySizeUpSound(true);
                     slotManager.ResizeSlotMatrix(0);
-                    yield return new WaitForSeconds(1f);
+                    yield return new WaitForSeconds(1.5f);
                     audioController.PlaySizeUpSound(false);
 
                 }
@@ -365,9 +368,6 @@ public class GameManager : MonoBehaviour
     {
         if (SlotStart_Button) SlotStart_Button.interactable = toggle;
         if (AutoSpin_Button) AutoSpin_Button.interactable = toggle;
-        if (Maxbet_button) Maxbet_button.interactable = toggle;
-        if (BetMinus_Button) BetMinus_Button.interactable = toggle;
-        if (BetPlus_Button) BetPlus_Button.interactable = toggle;
         if (AutoSpinPopup_Button) AutoSpinPopup_Button.interactable = toggle;
         if (ToatlBetMinus_Button) ToatlBetMinus_Button.interactable = toggle;
         if (TotalBetPlus_Button) TotalBetPlus_Button.interactable = toggle;
@@ -393,7 +393,6 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        if (betPerLine_text) betPerLine_text.text = socketController.socketModel.initGameData.Bets[betCounter].ToString();
         currentTotalBet = socketController.socketModel.initGameData.Bets[betCounter];
         if (totalBet_text) totalBet_text.text = currentTotalBet.ToString();
         if (currentBalance < currentTotalBet)
@@ -423,19 +422,6 @@ public class GameManager : MonoBehaviour
         autoSpinShowText.text = autoOptions[autoSpinCounter].ToString();
 
 
-    }
-    private void MaxBet()
-    {
-        if (audioController) audioController.PlayButtonAudio();
-
-        betCounter = socketController.socketModel.initGameData.Bets.Count - 1;
-        currentTotalBet = socketController.socketModel.initGameData.Bets[betCounter];
-
-        totalBet_text.text = currentTotalBet.ToString();
-        betPerLine_text.text = socketController.socketModel.initGameData.Bets[betCounter].ToString();
-
-        if (currentBalance < currentTotalBet)
-            uIManager.LowBalPopup();
     }
 
 

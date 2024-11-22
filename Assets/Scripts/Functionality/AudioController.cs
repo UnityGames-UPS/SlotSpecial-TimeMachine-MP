@@ -19,10 +19,10 @@ public class AudioController : MonoBehaviour
     [SerializeField] private AudioClip Button;
     [SerializeField] private AudioClip SmallWin_Audio;
     [SerializeField] private AudioClip BigWin_Audio;
-    [SerializeField] private AudioClip GambleWin_Audio;
     [SerializeField] private AudioClip NormalBg_Audio;
     [SerializeField] private AudioClip FreeSpinBg_Audio;
     [SerializeField] private AudioClip sizeup_audio;
+    [SerializeField] private AudioClip electricSound;
 
 
     private void Awake()
@@ -41,6 +41,8 @@ public class AudioController : MonoBehaviour
         if (type == "big"){
             audioPlayer_wl.clip = BigWin_Audio;
             audioPlayer_wl.pitch=1.2f;
+        } else if(type == "electric"){
+                audioPlayer_wl.clip=electricSound;
         }
         else
         {

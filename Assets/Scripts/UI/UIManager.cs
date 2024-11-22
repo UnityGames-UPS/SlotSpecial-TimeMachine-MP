@@ -17,6 +17,8 @@ public class UIManager : MonoBehaviour
     [Header("Free Spin Popup")]
     [SerializeField] private GameObject FreeSPinPopUpObject;
     [SerializeField] private TMP_Text FreeSpinCount;
+    [SerializeField] private GameObject freeSpinBg;
+    [SerializeField] private Image[] purpleBar;
 
     [Header("Popus UI")]
     [SerializeField] private GameObject MainPopup_Object;
@@ -38,10 +40,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button RightBtn;
     [SerializeField] private Button LeftBtn;
 
-    [Header("Gamble texts")]
-    [SerializeField] private TMP_Text bank;
-    [SerializeField] private TMP_Text bet;
-    [SerializeField] private TMP_Text potentialWin;
+
 
 
     [Header("Settings Popup")]
@@ -54,7 +53,6 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Sprite button;
     private bool isMusic = true;
     private bool isSound = true;
-    private bool isMute = false;
 
     [Header("all Win Popup")]
     [SerializeField] private GameObject specialWinObject;
@@ -97,6 +95,7 @@ public class UIManager : MonoBehaviour
 
     [SerializeField] private GameObject freeSpinPanel;
     [SerializeField] private GameObject gameButtonPanel;
+    [SerializeField] private Transform freeSpinText;
 
     [SerializeField]
     private Button m_AwakeGameButton;
@@ -185,21 +184,6 @@ public class UIManager : MonoBehaviour
     //     StopCoroutine(LoadingTextAnimate());
     // }
 
-    internal void InitiateGamble(double currentWinnings)
-    {
-        bank.text = currentWinnings.ToString();
-        bet.text = currentWinnings.ToString();
-        potentialWin.text = (currentWinnings * 2).ToString();
-        // gambleObject.SetActive(true);
-    }
-
-    internal void UpdategambleInfo(double currentWinnings, bool half = false)
-    {
-        bank.text = currentWinnings.ToString("f4");
-        bet.text = half ? (currentWinnings / 2).ToString() : currentWinnings.ToString("f4");
-        potentialWin.text = half ? currentWinnings.ToString() : (currentWinnings * 2).ToString("f4");
-
-    }
 
 
     internal void UpdatePlayerInfo(PlayerData playerData)
@@ -242,6 +226,34 @@ public class UIManager : MonoBehaviour
 
     }
 
+    internal void EnablePurplebar(bool enable)
+    {
+
+        if (enable)
+        {
+            purpleBar[0].color = Color.white;
+            purpleBar[1].color = Color.white;
+        }
+        else
+        {
+            purpleBar[0].DOFade(0, 1f);
+            purpleBar[1].DOFade(0, 1f);
+        }
+
+    }
+
+    internal void FreeSpinTextAnim()
+    {
+
+        freeSpinText.localScale *= 0; ;
+        freeSpinText.gameObject.SetActive(true);
+        freeSpinText.DOScale(2, 0.65f).OnComplete(() =>
+        {
+
+            freeSpinText.DOScale(0, 0.65f).OnComplete(() => freeSpinText.gameObject.SetActive(false));
+        });
+
+    }
     internal void ADfunction()
     {
         OpenPopup(ADPopup_Object);
@@ -324,37 +336,23 @@ public class UIManager : MonoBehaviour
 
             CurrentIndex--;
         }
-        // if (CurrentIndex == paytableList.Length - 1)
-        // {
-        //     RightBtn.interactable = false;
-        // }
-        // else
-        // {
-        //     RightBtn.interactable = true;
-
-        // }
-        // if (CurrentIndex == 0)
-        // {
-        //     LeftBtn.interactable = false;
-        // }
-        // else
-        // {
-        //     LeftBtn.interactable = true;
-        // }
 
     }
 
-    internal void FreeSpinPopup(int amount)
+    internal void FreeSpinPopup(int amount, bool enableBg)
     {
         FreeSpinCount.text = amount.ToString();
         OpenPopup(FreeSPinPopUpObject);
-
+        if (enableBg)
+            freeSpinBg.SetActive(true);
     }
 
     internal void CloseFreeSpinPopup()
     {
         ClosePopup();
         FreeSpinCount.text = "0";
+        if (freeSpinBg.activeSelf)
+            freeSpinBg.SetActive(false);
     }
     internal void EnableWinPopUp(int value)
     {
@@ -415,12 +413,12 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    internal void UpdateFreeSpinInfo(int freespinCount=-1, double winnings=-1)
+    internal void UpdateFreeSpinInfo(int freespinCount = -1, double winnings = -1)
     {
-        if(freespinCount>=0)
-        freeSpinInfo.text = freespinCount.ToString();
-        if(winnings>=0)
-        freeSpinWinnings.text = winnings.ToString();
+        if (freespinCount >= 0)
+            freeSpinInfo.text = freespinCount.ToString();
+        if (winnings >= 0)
+            freeSpinWinnings.text = winnings.ToString();
     }
 
     private void ToggleMusic()
