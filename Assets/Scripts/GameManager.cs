@@ -247,7 +247,7 @@ public class GameManager : MonoBehaviour
             {
                 StopCoroutine(freeSpinRoutine);
                 freeSpinStartButton.gameObject.SetActive(false);
-                uIManager.FreeSpinPopup(freeSpinCount - prevFreeSpin,false);
+                uIManager.FreeSpinPopup(freeSpinCount - prevFreeSpin, false);
                 yield return new WaitForSeconds(2f);
                 uIManager.CloseFreeSpinPopup();
                 freeSpinStartButton.gameObject.SetActive(true);
@@ -256,7 +256,7 @@ public class GameManager : MonoBehaviour
             else
             {
 
-                uIManager.FreeSpinPopup(freeSpinCount,true);
+                uIManager.FreeSpinPopup(freeSpinCount, true);
                 audioController.playBgAudio("FP");
             }
 
@@ -380,17 +380,22 @@ public class GameManager : MonoBehaviour
 
         if (inc)
         {
-            if (betCounter < socketController.socketModel.initGameData.Bets.Count - 1)
-            {
-                betCounter++;
-            }
+            betCounter++;
+
         }
         else
         {
-            if (betCounter > 0)
-            {
-                betCounter--;
-            }
+            betCounter--;
+
+        }
+        if (betCounter > socketController.socketModel.initGameData.Bets.Count - 1)
+        {
+            betCounter=0;
+        }
+        if (betCounter < 0)
+        {
+            betCounter=socketController.socketModel.initGameData.Bets.Count - 1;
+
         }
 
         currentTotalBet = socketController.socketModel.initGameData.Bets[betCounter];

@@ -188,7 +188,7 @@ public class UIManager : MonoBehaviour
 
     internal void UpdatePlayerInfo(PlayerData playerData)
     {
-        playerCurrentWinning.text = playerData.currentWining.ToString();
+        playerCurrentWinning.text = playerData.currentWining.ToString("f3");
         playerBalance.text = playerData.Balance.ToString("f4");
 
     }
