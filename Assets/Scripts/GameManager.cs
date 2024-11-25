@@ -278,7 +278,7 @@ public class GameManager : MonoBehaviour
     }
     bool OnSpinStart()
     {
-
+        slotManager.watchAnimation.StopAnimation();
         isSpinning = true;
         winIterationCount = 0;
         slotManager.disableIconsPanel.SetActive(false);
@@ -296,6 +296,7 @@ public class GameManager : MonoBehaviour
 
     IEnumerator OnSpin()
     {
+        slotManager.watchAnimation.StartAnimation();
 
         var spinData = new { data = new { currentBet = betCounter, currentLines = 1, spins = 1 }, id = "SPIN" };
         socketController.SendData("message", spinData);
@@ -359,6 +360,8 @@ public class GameManager : MonoBehaviour
         if (isFreeSpin)
             uIManager.UpdateFreeSpinInfo(winnings: socketController.socketModel.playerData.currentWining);
         slotManager.StopIconAnimation();
+        slotManager.watchAnimation.StopAnimation();
+
         yield return null;
     }
 

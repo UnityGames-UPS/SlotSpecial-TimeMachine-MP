@@ -33,6 +33,7 @@ public class SlotController : MonoBehaviour
     [SerializeField] private ImageAnimation[] sideBarsAnim;
 
     [SerializeField] private RectTransform[] horizontalBars;
+    [SerializeField] internal ImageAnimation watchAnimation;
     [SerializeField] internal int level;
 
     [SerializeField] private TMP_Text noOfWays;
@@ -106,33 +107,7 @@ public class SlotController : MonoBehaviour
         }
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Z))
-        {
-            ResizeSlotMatrix(1);
-        }
-        if (Input.GetKeyDown(KeyCode.X))
-        {
-            ResizeSlotMatrix(2);
 
-        }
-        if (Input.GetKeyDown(KeyCode.C))
-        {
-            ResizeSlotMatrix(3);
-
-        }
-        if (Input.GetKeyDown(KeyCode.V))
-        {
-            ResizeSlotMatrix(4);
-
-        }
-        if (Input.GetKeyDown(KeyCode.B))
-        {
-            ResizeSlotMatrix(0);
-
-        }
-    }
     internal void ResizeSlotMatrix(int levelCount)
     {
 
@@ -141,11 +116,13 @@ public class SlotController : MonoBehaviour
             for (int i = 0; i < 5; i++)
             {
                 if (i == 0)
-                    slotMatrix[i].slotImages[4 - levelCount].iconImage.sprite = iconImages[UnityEngine.Random.Range(0, 4)];
+                    slotMatrix[i].slotImages[4 - levelCount].iconImage.sprite = iconImages[UnityEngine.Random.Range(0, 5)];
                 else
-                    slotMatrix[i].slotImages[4 - levelCount].iconImage.sprite = iconImages[UnityEngine.Random.Range(4, 9)];
+                    slotMatrix[i].slotImages[4 - levelCount].iconImage.sprite = iconImages[UnityEngine.Random.Range(5, 9)];
             }
         }
+
+        watchAnimation.StopAnimation();
 
         level = levelCount;
         if (level == 1)
@@ -199,7 +176,6 @@ public class SlotController : MonoBehaviour
         tweenHeight = reelHeight + initialPos;
         mask_transform.DOSizeDelta(sizeDelta, 1f);
         bg_mask_transform.DOSizeDelta(sizeDelta, 1f);
-
         float offset = iconWidth * 2 + 35;
         bool animateSideBars = true;
 
@@ -210,10 +186,14 @@ public class SlotController : MonoBehaviour
             {
                 item.sizeDelta = new Vector2(820, 40);
             }
+            watchAnimation.StartAnimation();
+
         }
         else if (level > 0)
         {
             offset = iconWidth * 2 - (level - 1) * 20;
+            watchAnimation.StartAnimation();
+
         }
         else
         {
