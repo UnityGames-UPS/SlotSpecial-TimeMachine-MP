@@ -107,7 +107,7 @@ public class Symbol
 {
     public int ID { get; set; }
     public string Name { get; set; }
-    public List<List<int>> Multiplier { get; set;}
+    public List<List<double>> Multiplier { get; set;}
     public object defaultAmount { get; set; }
     public object symbolsCount { get; set; }
     public object increaseValue { get; set; }

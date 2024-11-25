@@ -391,7 +391,7 @@ public class UIManager : MonoBehaviour
 
     internal IEnumerator WinTextAnim(double amount)
     {
-        Win_Text.text = amount.ToString();
+        Win_Text.text = amount.ToString("f3");
         Win_Text.transform.localScale *= 4;
         Color InitCOlor = Win_Text.color;
         Win_Text.color = new Color(0, 0, 0, 0);
