@@ -378,9 +378,7 @@ public class GameManager : MonoBehaviour
         // slotManager.StopIconAnimation();
         slotManager.PopulateSLotMatrix(socketController.socketModel.resultGameData.resultSymbols);
         currentBalance = socketController.socketModel.playerData.Balance;
-        yield return slotManager.StopSpin(turboMode: turboMode);
-        audioController.PlaySpinStopAudio();
-        yield return new WaitForSeconds(0.2f);
+        yield return slotManager.StopSpin(turboMode: turboMode,audioController.PlaySpinStopAudio);
 
         if (StopSpin_Button.gameObject.activeSelf)
         {
