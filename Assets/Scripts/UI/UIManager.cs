@@ -60,6 +60,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Sprite[] winTitleSprites;
     [SerializeField] private GameObject WinPopup_Object;
     [SerializeField] private TMP_Text Win_Text;
+    [SerializeField] private Button winPopUpExit_Button;
 
 
     [Header("low balance popup")]
@@ -113,6 +114,7 @@ public class UIManager : MonoBehaviour
 
     internal Action OnExit;
 
+    Tween balanceTween;
     private void Awake()
     {
         //if (spalsh_screen) spalsh_screen.SetActive(true);
@@ -154,6 +156,10 @@ public class UIManager : MonoBehaviour
         isSound = false;
         ToggleMusic();
         ToggleSound();
+
+        winPopUpExit_Button.onClick.AddListener(()=>{
+            CloseWinPopup();
+        });
     }
 
     private void SetButton(Button button, Action action)
@@ -188,8 +194,9 @@ public class UIManager : MonoBehaviour
 
     internal void UpdatePlayerInfo(PlayerData playerData)
     {
+        balanceTween?.Kill();
         playerCurrentWinning.text = playerData.currentWining.ToString("f3");
-        playerBalance.text = playerData.Balance.ToString("f4");
+        playerBalance.text = playerData.Balance.ToString("f3");
 
     }
 
@@ -378,9 +385,9 @@ public class UIManager : MonoBehaviour
     internal void DeductBalanceAnim(double finalAmount, double initAmount)
     {
 
-        DOTween.To(() => initAmount, (val) => initAmount = val, finalAmount, 0.8f).OnUpdate(() =>
+        balanceTween=DOTween.To(() => initAmount, (val) => initAmount = val, finalAmount, 0.8f).OnUpdate(() =>
         {
-            playerBalance.text = initAmount.ToString("f4");
+            playerBalance.text = initAmount.ToString("f3");
 
         }).OnComplete(() =>
         {
@@ -402,8 +409,18 @@ public class UIManager : MonoBehaviour
         if (specialWinObject.activeSelf)
             specialWinObject.SetActive(false);
 
+        GameManager.winAnimComplete=true;
 
+    }
 
+    void CloseWinPopup(){
+        ClosePopup();
+        if (specialWinObject.activeSelf)
+            specialWinObject.SetActive(false);
+        GameManager.winAnimComplete=true;
+        DOTween.Kill(Win_Text.transform);
+        Win_Text.color=new Color(1,1,1,1);
+        Win_Text.transform.localScale=Vector3.one;
     }
     internal void DisconnectionPopup()
     {
