@@ -189,7 +189,6 @@ public class GameManager : MonoBehaviour
 
         uIManager.ToggleFreeSpinPanel(false);
 
-        ToggleButtonGrp(true);
         isAutoSpin = false;
         isSpinning = false;
         isFreeSpin = false;
@@ -198,6 +197,9 @@ public class GameManager : MonoBehaviour
         {
             ExecuteAutoSpin(autoSpinLeft);
             uIManager.ClosePopup();
+
+        }else{
+        ToggleButtonGrp(true);
 
         }
 
