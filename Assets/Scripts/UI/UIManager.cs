@@ -274,7 +274,7 @@ public class UIManager : MonoBehaviour
             text = "";
             for (int j = 0; j < uIData.symbols[i].Multiplier.Count; j++)
             {
-                text += $"{5 - j}x - {uIData.symbols[i].Multiplier[j][0]} \n";
+                text += $"{5 - j}x - {uIData.symbols[i].Multiplier[j][0]+"X"} \n";
             }
             SymbolsText[i].text = text;
         }
@@ -405,11 +405,7 @@ public class UIManager : MonoBehaviour
         Win_Text.transform.DOScale(Vector2.one, 1f);
         Win_Text.DOColor(InitCOlor, 1f);
         yield return new WaitForSeconds(3f);
-        ClosePopup();
-        if (specialWinObject.activeSelf)
-            specialWinObject.SetActive(false);
-
-        GameManager.winAnimComplete=true;
+        CloseWinPopup();
 
     }
 
