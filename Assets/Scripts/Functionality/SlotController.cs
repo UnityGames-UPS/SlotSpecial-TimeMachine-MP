@@ -79,7 +79,7 @@ public class SlotController : MonoBehaviour
             matrixRowCount++;
         }
     }
-    internal IEnumerator StopSpin(bool turboMode)
+    internal IEnumerator StopSpin(bool turboMode,Action playFallAudio)
     {
 
         for (int i = 0; i < Slot_Transform.Length; i++)
@@ -89,14 +89,19 @@ public class SlotController : MonoBehaviour
             if (!GameManager.immediateStop)
             {
 
+            playFallAudio?.Invoke();
                 if (turboMode)
                     yield return new WaitForSeconds(0.1f);
                 else
                     yield return new WaitForSeconds(0.2f);
             }
+                    // yield return new WaitForSeconds(0.2f);
+
         }
-        if (GameManager.immediateStop)
+        if (GameManager.immediateStop){
+            playFallAudio?.Invoke();
             yield return new WaitForSeconds(0.2f);
+        }
 
         KillAllTweens();
 

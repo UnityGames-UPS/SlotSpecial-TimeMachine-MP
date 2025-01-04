@@ -254,10 +254,10 @@ public class UIManager : MonoBehaviour
 
         freeSpinText.localScale *= 0; ;
         freeSpinText.gameObject.SetActive(true);
-        freeSpinText.DOScale(2, 0.65f).OnComplete(() =>
+        freeSpinText.DOScale(2, 0.5f).OnComplete(() =>
         {
 
-            freeSpinText.DOScale(0, 0.65f).OnComplete(() => freeSpinText.gameObject.SetActive(false));
+            freeSpinText.DOScale(0, 0.5f).OnComplete(() => freeSpinText.gameObject.SetActive(false));
         });
 
     }
