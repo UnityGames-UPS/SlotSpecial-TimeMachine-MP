@@ -36,6 +36,7 @@ public class SocketController : MonoBehaviour
     private string TestToken;
 
     protected string gameID = "SL-TM";
+    // protected string gameID = "";
 
     internal bool isLoading;
     internal bool SetInit = false;
@@ -245,18 +246,19 @@ public class SocketController : MonoBehaviour
 
         string id = resp["id"].ToString();
 
-        var message = resp["message"];
-        var gameData = message["GameData"];
+        // var message = resp["message"];
+        // var gameData = message["GameData"];
 
-        if (message["PlayerData"] != null)
-            socketModel.playerData = message["PlayerData"].ToObject<PlayerData>();
+        if (resp["message"]["PlayerData"] != null)
+            socketModel.playerData = resp["message"]["PlayerData"].ToObject<PlayerData>();
 
         switch (id)
         {
             case "InitData":
                 {
-                    socketModel.uIData.symbols = message["UIData"]["paylines"]["symbols"].ToObject<List<Symbol>>();
-                    socketModel.initGameData.Bets = gameData["Bets"].ToObject<List<double>>();
+                    socketModel.uIData.symbols = resp["message"]["UIData"]["paylines"]["symbols"].ToObject<List<Symbol>>();
+                    socketModel.initGameData.Bets = resp["message"]["GameData"]["Bets"].ToObject<List<double>>();
+                    socketModel.initGameData.freeSpinCount=resp["message"]["GameData"]["FreespinBonusCount"].ToObject<int>();
                     OnInit?.Invoke();
                     Debug.Log("init data" + JsonConvert.SerializeObject(socketModel.initGameData));
 
@@ -265,9 +267,9 @@ public class SocketController : MonoBehaviour
             case "ResultData":
                 {
 
-                    socketModel.resultGameData = gameData.ToObject<ResultGameData>();
+                    socketModel.resultGameData = resp["message"]["GameData"].ToObject<ResultGameData>();
 
-                    Debug.Log("result data" + JsonConvert.SerializeObject(gameData["resultSymbols"]));
+                    Debug.Log("result data" + JsonConvert.SerializeObject(socketModel.resultGameData));
                     isResultdone = true;
                     break;
                 }
