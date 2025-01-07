@@ -392,7 +392,7 @@ public class UIManager : MonoBehaviour
         }).OnComplete(() =>
         {
 
-            playerBalance.text = finalAmount.ToString();
+            playerBalance.text = finalAmount.ToString("f3");
         });
     }
 
