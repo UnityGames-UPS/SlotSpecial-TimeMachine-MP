@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 using UnityEditor.PackageManager;
+using System.Linq;
 public class GameManager : MonoBehaviour
 {
     [Header("scripts")]
@@ -26,6 +27,9 @@ public class GameManager : MonoBehaviour
 
     [Header("For auto spins")]
     [SerializeField] private Button AutoSpin_Button;
+
+    [SerializeField] private Button[] AutoSpinOptions_Button;
+    [SerializeField] private TMP_Text[] AutoSpinOptions_Text;
     [SerializeField] private Button AutoSpinStop_Button;
     [SerializeField] private Button AutoSpinPopup_Button;
     [SerializeField] private Button autoSpinUp;
@@ -35,7 +39,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private TMP_Text autoSpinText;
     [SerializeField] private TMP_Text autoSpinShowText;
     List<int> autoOptions = new List<int>() { 15, 20, 25, 30, 40, 100 };
-
+    [SerializeField] private int maxAutoSpinValue=1000;
 
 
     [Header("For FreeSpins")]
@@ -68,14 +72,18 @@ public class GameManager : MonoBehaviour
             ExecuteAutoSpin();
             uIManager.ClosePopup();
         }, true);
+        InitiateAutoSpin();
         SetButton(AutoSpinStop_Button, () => StartCoroutine(StopAutoSpinCoroutine()));
         SetButton(ToatlBetMinus_Button, () => OnBetChange(false));
         SetButton(TotalBetPlus_Button, () => OnBetChange(true));
         SetButton(autoSpinUp, () => OnAutoSpinChange(true));
         SetButton(autoSpinDown, () => OnAutoSpinChange(false));
+        SetButton(Turbo_Button,()=>ToggleTurboMode());
+        SetButton(StopSpin_Button,()=>StartCoroutine(StopSpin()));
+        autoSpinCounter=0;
         // SetButton(freeSpinStartButton, () => );
 
-        autoSpinShowText.text = autoOptions[autoSpinCounter].ToString();
+        // autoSpinShowText.text = autoOptions[autoSpinCounter].ToString();
 
 
         slotManager.shuffleInitialMatrix();
@@ -87,8 +95,8 @@ public class GameManager : MonoBehaviour
 
         socketController.OpenSocket();
 
-        StopSpin_Button.onClick.AddListener(() => StartCoroutine(StopSpin()));
-        Turbo_Button.onClick.AddListener(ToggleTurboMode);
+        // StopSpin_Button.onClick.AddListener(() => StartCoroutine(StopSpin()));
+        // Turbo_Button.onClick.AddListener(ToggleTurboMode);
     }
 
 
@@ -128,6 +136,21 @@ public class GameManager : MonoBehaviour
 
     }
 
+    void InitiateAutoSpin(){
+
+
+        for (int i = 0; i < autoOptions.Count; i++)
+        {
+            int capturedIndex=i;
+            SetButton(AutoSpinOptions_Button[capturedIndex],()=>ExecuteAutoSpin(autoOptions[capturedIndex]));
+            AutoSpinOptions_Text[capturedIndex].text=autoOptions[capturedIndex].ToString();
+            autoSpinCounter=autoOptions[capturedIndex];
+            uIManager.ClosePopup();
+
+        }
+
+
+    }
 
     void ExecuteSpin() => StartCoroutine(SpinRoutine());
 
@@ -135,7 +158,7 @@ public class GameManager : MonoBehaviour
     void ExecuteAutoSpin(int nofAutoSpin = 0)
     {
         if (nofAutoSpin <= 0)
-            nofAutoSpin = autoOptions[autoSpinCounter];
+            nofAutoSpin=autoSpinCounter;
 
         if (!isSpinning && nofAutoSpin > 0)
         {
@@ -499,20 +522,23 @@ public class GameManager : MonoBehaviour
 
         if (inc)
         {
-            if (autoSpinCounter < autoOptions.Count - 1)
+            autoSpinCounter++;
+            if (autoSpinCounter > maxAutoSpinValue)
             {
-                autoSpinCounter++;
+                autoSpinCounter=0;
             }
         }
         else
         {
-            if (autoSpinCounter > 0)
-            {
                 autoSpinCounter--;
+            if (autoSpinCounter < 0)
+            {
+                autoSpinCounter=maxAutoSpinValue;
+
             }
         }
 
-        autoSpinShowText.text = autoOptions[autoSpinCounter].ToString();
+        autoSpinShowText.text = autoSpinCounter.ToString();
 
 
     }
