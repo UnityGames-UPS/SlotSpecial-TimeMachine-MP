@@ -31,7 +31,7 @@ public class UIManager : MonoBehaviour
 
     [Header("Paytable Texts")]
     [SerializeField] private TMP_Text[] SymbolsText;
-    [SerializeField] private TMP_Text Bat_Text;
+    [SerializeField] private TMP_Text BonusFreeSpins_Text;
     [SerializeField] private TMP_Text Wild_Text;
 
     [Header("Pagination")]
@@ -89,7 +89,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button CloseAD_Button;
     [SerializeField] private GameObject ADPopup_Object;
 
-    [Header("free spin info")]
+    [Header("free spin popup")]
 
     [SerializeField] private TMP_Text freeSpinInfo;
     [SerializeField] private TMP_Text freeSpinWinnings;
@@ -143,8 +143,8 @@ public class UIManager : MonoBehaviour
         SetButton(MusicToggle_button, ToggleMusic);
         SetButton(SoundToggle_button, ToggleSound);
 
-        SetButton(LeftBtn, () => Slide(-1));
-        SetButton(RightBtn, () => Slide(1));
+        SetButton(LeftBtn, () => Slide(false));
+        SetButton(RightBtn, () => Slide(true));
         SetButton(CloseDisconnect_Button, CallOnExitFunction);
         SetButton(Close_Button, ClosePopup);
         SetButton(QuitSplash_button, () => OpenPopup(QuitPopupObject));
@@ -280,7 +280,7 @@ public class UIManager : MonoBehaviour
         }
 
         Wild_Text.text = uIData.symbols[10].description.ToString();
-
+        BonusFreeSpins_Text.text=uIData.symbols[11].description.ToString();
     }
 
     private void CallOnExitFunction()
@@ -323,26 +323,26 @@ public class UIManager : MonoBehaviour
 
 
 
-    private void Slide(int direction)
+    private void Slide(bool inc)
     {
-
-        if (CurrentIndex < paytableList.Length - 1 && direction > 0)
-        {
-            // Move to the next item
-            paytableList[CurrentIndex].SetActive(false);
-            paytableList[CurrentIndex + 1].SetActive(true);
-
+        if(inc){
             CurrentIndex++;
-        }
-        else if (CurrentIndex >= 1 && direction < 0)
-        {
+             if (CurrentIndex > paytableList.Length - 1 )
+             CurrentIndex=0;
 
-            // Move to the previous item
-            paytableList[CurrentIndex].SetActive(false);
-            paytableList[CurrentIndex - 1].SetActive(true);
-
+        }else{
             CurrentIndex--;
+            if (CurrentIndex <0)
+            CurrentIndex=paytableList.Length - 1;
+
         }
+        foreach (var item in paytableList)
+        {
+            item.SetActive(false);
+            
+        }
+            paytableList[CurrentIndex].SetActive(true);
+ 
 
     }
 
