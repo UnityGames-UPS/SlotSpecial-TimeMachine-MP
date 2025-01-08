@@ -6,7 +6,6 @@ using Newtonsoft.Json;
 using Best.SocketIO;
 using Best.SocketIO.Events;
 using Newtonsoft.Json.Linq;
-using DG.Tweening;
 
 
 public class SocketController : MonoBehaviour

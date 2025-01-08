@@ -1,12 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
-using UnityEditor.PackageManager;
-using System.Linq;
 public class GameManager : MonoBehaviour
 {
     [Header("scripts")]
