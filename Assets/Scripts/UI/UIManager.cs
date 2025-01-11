@@ -1,9 +1,7 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 using UnityEngine.UI;
-using System.Linq;
 using TMPro;
 using System;
 public class UIManager : MonoBehaviour
@@ -31,7 +29,7 @@ public class UIManager : MonoBehaviour
 
     [Header("Paytable Texts")]
     [SerializeField] private TMP_Text[] SymbolsText;
-    [SerializeField] private TMP_Text Bat_Text;
+    [SerializeField] private TMP_Text BonusFreeSpins_Text;
     [SerializeField] private TMP_Text Wild_Text;
 
     [Header("Pagination")]
@@ -60,6 +58,9 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Sprite[] winTitleSprites;
     [SerializeField] private GameObject WinPopup_Object;
     [SerializeField] private TMP_Text Win_Text;
+    [SerializeField] private TMP_Text SpecialWin_Text;
+    [SerializeField] private Button winPopUpExit_Button;
+    Tween WintextTween;
 
 
     [Header("low balance popup")]
@@ -88,7 +89,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button CloseAD_Button;
     [SerializeField] private GameObject ADPopup_Object;
 
-    [Header("free spin info")]
+    [Header("free spin popup")]
 
     [SerializeField] private TMP_Text freeSpinInfo;
     [SerializeField] private TMP_Text freeSpinWinnings;
@@ -113,6 +114,7 @@ public class UIManager : MonoBehaviour
 
     internal Action OnExit;
 
+    Tween balanceTween;
     private void Awake()
     {
         //if (spalsh_screen) spalsh_screen.SetActive(true);
@@ -141,8 +143,8 @@ public class UIManager : MonoBehaviour
         SetButton(MusicToggle_button, ToggleMusic);
         SetButton(SoundToggle_button, ToggleSound);
 
-        SetButton(LeftBtn, () => Slide(-1));
-        SetButton(RightBtn, () => Slide(1));
+        SetButton(LeftBtn, () => Slide(false));
+        SetButton(RightBtn, () => Slide(true));
         SetButton(CloseDisconnect_Button, CallOnExitFunction);
         SetButton(Close_Button, ClosePopup);
         SetButton(QuitSplash_button, () => OpenPopup(QuitPopupObject));
@@ -154,6 +156,10 @@ public class UIManager : MonoBehaviour
         isSound = false;
         ToggleMusic();
         ToggleSound();
+
+        winPopUpExit_Button.onClick.AddListener(()=>{
+            CloseWinPopup();
+        });
     }
 
     private void SetButton(Button button, Action action)
@@ -188,8 +194,9 @@ public class UIManager : MonoBehaviour
 
     internal void UpdatePlayerInfo(PlayerData playerData)
     {
+        balanceTween?.Kill();
         playerCurrentWinning.text = playerData.currentWining.ToString("f3");
-        playerBalance.text = playerData.Balance.ToString("f4");
+        playerBalance.text = playerData.Balance.ToString("f3");
 
     }
 
@@ -247,10 +254,10 @@ public class UIManager : MonoBehaviour
 
         freeSpinText.localScale *= 0; ;
         freeSpinText.gameObject.SetActive(true);
-        freeSpinText.DOScale(2, 0.65f).OnComplete(() =>
+        freeSpinText.DOScale(2, 0.5f).OnComplete(() =>
         {
 
-            freeSpinText.DOScale(0, 0.65f).OnComplete(() => freeSpinText.gameObject.SetActive(false));
+            freeSpinText.DOScale(0, 0.5f).OnComplete(() => freeSpinText.gameObject.SetActive(false));
         });
 
     }
@@ -267,13 +274,13 @@ public class UIManager : MonoBehaviour
             text = "";
             for (int j = 0; j < uIData.symbols[i].Multiplier.Count; j++)
             {
-                text += $"{5 - j}x - {uIData.symbols[i].Multiplier[j][0]} \n";
+                text += $"{5 - j}x - {uIData.symbols[i].Multiplier[j][0]+"X"} \n";
             }
             SymbolsText[i].text = text;
         }
 
         Wild_Text.text = uIData.symbols[10].description.ToString();
-
+        BonusFreeSpins_Text.text=uIData.symbols[11].description.ToString();
     }
 
     private void CallOnExitFunction()
@@ -316,26 +323,26 @@ public class UIManager : MonoBehaviour
 
 
 
-    private void Slide(int direction)
+    private void Slide(bool inc)
     {
-
-        if (CurrentIndex < paytableList.Length - 1 && direction > 0)
-        {
-            // Move to the next item
-            paytableList[CurrentIndex].SetActive(false);
-            paytableList[CurrentIndex + 1].SetActive(true);
-
+        if(inc){
             CurrentIndex++;
-        }
-        else if (CurrentIndex >= 1 && direction < 0)
-        {
+             if (CurrentIndex > paytableList.Length - 1 )
+             CurrentIndex=0;
 
-            // Move to the previous item
-            paytableList[CurrentIndex].SetActive(false);
-            paytableList[CurrentIndex - 1].SetActive(true);
-
+        }else{
             CurrentIndex--;
+            if (CurrentIndex <0)
+            CurrentIndex=paytableList.Length - 1;
+
         }
+        foreach (var item in paytableList)
+        {
+            item.SetActive(false);
+            
+        }
+            paytableList[CurrentIndex].SetActive(true);
+ 
 
     }
 
@@ -354,23 +361,33 @@ public class UIManager : MonoBehaviour
         if (freeSpinBg.activeSelf)
             freeSpinBg.SetActive(false);
     }
-    internal void EnableWinPopUp(int value)
+    internal void EnableWinPopUp(int type,double value)
     {
 
         OpenPopup(WinPopup_Object);
-        if (value > 0)
+        if (type > 0){
             specialWinObject.SetActive(true);
+            Win_Text.gameObject.SetActive(false);
+        }
+        else{
+            Win_Text.gameObject.SetActive(true);
+        }
 
-        switch (value)
+        switch (type)
         {
+            case 0: StartCoroutine(WinTextAnim(value,false));
+                break;
             case 1:
                 specialWinTitle.sprite = winTitleSprites[0];
+                StartCoroutine(WinTextAnim(value,true));
                 break;
             case 2:
                 specialWinTitle.sprite = winTitleSprites[1];
+                StartCoroutine(WinTextAnim(value,true));
                 break;
             case 3:
                 specialWinTitle.sprite = winTitleSprites[2];
+                StartCoroutine(WinTextAnim(value,true));
                 break;
         }
     }
@@ -378,32 +395,44 @@ public class UIManager : MonoBehaviour
     internal void DeductBalanceAnim(double finalAmount, double initAmount)
     {
 
-        DOTween.To(() => initAmount, (val) => initAmount = val, finalAmount, 0.8f).OnUpdate(() =>
+        balanceTween=DOTween.To(() => initAmount, (val) => initAmount = val, finalAmount, 0.8f).OnUpdate(() =>
         {
-            playerBalance.text = initAmount.ToString("f4");
+            playerBalance.text = initAmount.ToString("f3");
 
         }).OnComplete(() =>
         {
 
-            playerBalance.text = finalAmount.ToString();
+            playerBalance.text = finalAmount.ToString("f3");
         });
     }
 
-    internal IEnumerator WinTextAnim(double amount)
+    internal IEnumerator WinTextAnim(double amount,bool special)
     {
-        Win_Text.text = amount.ToString();
+        Sequence sequence = DOTween.Sequence();
+        if(!special){
+        Win_Text.text = amount.ToString("f3");
         Win_Text.transform.localScale *= 4;
         Color InitCOlor = Win_Text.color;
         Win_Text.color = new Color(0, 0, 0, 0);
-        Win_Text.transform.DOScale(Vector2.one, 1f);
-        Win_Text.DOColor(InitCOlor, 1f);
+        sequence.Append(Win_Text.transform.DOScale(Vector2.one, 1f));
+        sequence.Join(Win_Text.DOColor(InitCOlor, 1f));
+        }else{
+            SpecialWin_Text.text=amount.ToString("f3");
+        }
+        WintextTween=sequence;
         yield return new WaitForSeconds(3f);
+        CloseWinPopup();
+
+    }
+
+    void CloseWinPopup(){
         ClosePopup();
         if (specialWinObject.activeSelf)
             specialWinObject.SetActive(false);
-
-
-
+        GameManager.winAnimComplete=true;
+        WintextTween?.Kill();
+        Win_Text.color=new Color(1,1,1,1);
+        Win_Text.transform.localScale=Vector3.one;
     }
     internal void DisconnectionPopup()
     {

@@ -33,6 +33,7 @@ public class SlotController : MonoBehaviour
     [SerializeField] private ImageAnimation[] sideBarsAnim;
 
     [SerializeField] private RectTransform[] horizontalBars;
+    [SerializeField] internal ImageAnimation watchAnimation;
     [SerializeField] internal int level;
 
     [SerializeField] private TMP_Text noOfWays;
@@ -50,17 +51,18 @@ public class SlotController : MonoBehaviour
     [SerializeField] private List<Image> levelIndicator;
     [SerializeField] internal List<SlotIconView> animatingIcons = new List<SlotIconView>();
 
-    internal IEnumerator StartSpin()
+    internal IEnumerator StartSpin(bool turboMode)
     {
 
         for (int i = 0; i < Slot_Transform.Length; i++)
         {
-            InitializeTweening(Slot_Transform[i]);
-            yield return new WaitForSeconds(0.15f);
+            InitializeTweening(Slot_Transform[i], turboMode);
+                        if (!GameManager.immediateStop)
+                yield return new WaitForSeconds(0.1f);
 
         }
 
-        yield return new WaitForSeconds(0.2f);
+        // yield return new WaitForSeconds(0.2f);
     }
 
     internal void PopulateSLotMatrix(List<List<int>> resultData)
@@ -77,16 +79,28 @@ public class SlotController : MonoBehaviour
             matrixRowCount++;
         }
     }
-    internal IEnumerator StopSpin()
+    internal IEnumerator StopSpin(bool turboMode,Action playFallAudio)
     {
 
         for (int i = 0; i < Slot_Transform.Length; i++)
         {
-            StopTweening(Slot_Transform[i], i);
+            StopTweening(Slot_Transform[i], i, turboMode, GameManager.immediateStop);
 
+            if (!GameManager.immediateStop)
+            {
+
+            playFallAudio?.Invoke();
+                if (turboMode)
+                    yield return new WaitForSeconds(0.1f);
+                else
+                    yield return new WaitForSeconds(0.2f);
+            }
+
+        }
+        if (GameManager.immediateStop){
+            playFallAudio?.Invoke();
             yield return new WaitForSeconds(0.2f);
         }
-        // yield return new WaitForSeconds(0.2f);
 
         KillAllTweens();
 
@@ -106,33 +120,7 @@ public class SlotController : MonoBehaviour
         }
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Z))
-        {
-            ResizeSlotMatrix(1);
-        }
-        if (Input.GetKeyDown(KeyCode.X))
-        {
-            ResizeSlotMatrix(2);
 
-        }
-        if (Input.GetKeyDown(KeyCode.C))
-        {
-            ResizeSlotMatrix(3);
-
-        }
-        if (Input.GetKeyDown(KeyCode.V))
-        {
-            ResizeSlotMatrix(4);
-
-        }
-        if (Input.GetKeyDown(KeyCode.B))
-        {
-            ResizeSlotMatrix(0);
-
-        }
-    }
     internal void ResizeSlotMatrix(int levelCount)
     {
 
@@ -141,11 +129,13 @@ public class SlotController : MonoBehaviour
             for (int i = 0; i < 5; i++)
             {
                 if (i == 0)
-                    slotMatrix[i].slotImages[4 - levelCount].iconImage.sprite = iconImages[UnityEngine.Random.Range(0, 4)];
+                    slotMatrix[i].slotImages[4 - levelCount].iconImage.sprite = iconImages[UnityEngine.Random.Range(0, 5)];
                 else
-                    slotMatrix[i].slotImages[4 - levelCount].iconImage.sprite = iconImages[UnityEngine.Random.Range(4, 9)];
+                    slotMatrix[i].slotImages[4 - levelCount].iconImage.sprite = iconImages[UnityEngine.Random.Range(5, 9)];
             }
         }
+
+        watchAnimation.StopAnimation();
 
         level = levelCount;
         if (level == 1)
@@ -196,10 +186,11 @@ public class SlotController : MonoBehaviour
         sizeDelta.x = 5 * iconWidth;
         float reelHeight = 15 * iconHeight;
         initialPos = -(iconHeight * (3 + (level - 1) * 0.5f));
+
         tweenHeight = reelHeight + initialPos;
+
         mask_transform.DOSizeDelta(sizeDelta, 1f);
         bg_mask_transform.DOSizeDelta(sizeDelta, 1f);
-
         float offset = iconWidth * 2 + 35;
         bool animateSideBars = true;
 
@@ -210,10 +201,14 @@ public class SlotController : MonoBehaviour
             {
                 item.sizeDelta = new Vector2(820, 40);
             }
+            watchAnimation.StartAnimation();
+
         }
         else if (level > 0)
         {
             offset = iconWidth * 2 - (level - 1) * 20;
+            watchAnimation.StartAnimation();
+
         }
         else
         {
@@ -267,7 +262,6 @@ public class SlotController : MonoBehaviour
         {
             ;
             int[] pos = iconPos[j].Split(',').Select(int.Parse).ToArray();
-            Debug.Log("row,col" + ((7 - matrixlength) + pos[1]) + "," + pos[0]);
             SlotIconView tempIcon = slotMatrix[pos[0]].slotImages[(4 - level) + pos[1]];
             if (tempIcon.id == 10)
                 tempIcon.StartAnim(wildAnimSprite);
@@ -306,19 +300,34 @@ public class SlotController : MonoBehaviour
 
 
     #region TweeningCode
-    private void InitializeTweening(Transform slotTransform)
+    private void InitializeTweening(Transform slotTransform, bool turboMode)
     {
-        // slotTransform.localPosition = new Vector2(slotTransform.localPosition.x, 0);
-        Tweener tweener = slotTransform.DOLocalMoveY(-tweenHeight, 0.15f).SetLoops(-1, LoopType.Restart).SetDelay(0);
+        float delay = 0.5f;
+
+        if (level == 3)
+            delay = 0.25f;
+        if (level == 4)
+            delay = 0.15f;
+
+        if (turboMode)
+            delay = 0.15f;
+
+        Tweener tweener = slotTransform.DOLocalMoveY(-tweenHeight, delay).SetLoops(-1, LoopType.Restart).SetDelay(0).SetEase(Ease.Linear);
         alltweens.Add(tweener);
         // tweener.Play();
     }
 
-    private void StopTweening(Transform slotTransform, int index)
+    private void StopTweening(Transform slotTransform, int index, bool turboMode, bool immediateStop)
     {
+        float delay = 0.2f;
+        if (turboMode)
+            delay = 0.1f;
+        if (immediateStop)
+            delay = 0;
+
         alltweens[index].Pause();
         slotTransform.localPosition = new Vector2(slotTransform.localPosition.x, initialPos + 265);
-        alltweens[index] = slotTransform.DOLocalMoveY(initialPos, 0.2f).SetEase(Ease.OutElastic); // slot initial pos - iconsizefactor - spacing
+        alltweens[index] = slotTransform.DOLocalMoveY(initialPos, delay).SetEase(Ease.OutElastic); // slot initial pos - iconsizefactor - spacing
 
     }
 
