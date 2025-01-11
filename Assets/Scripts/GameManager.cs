@@ -397,6 +397,9 @@ public class GameManager : MonoBehaviour
 
         if (!immediateStop && !turboMode)
             yield return new WaitForSeconds(0.45f);
+        else{
+            yield return new WaitForSeconds(0.15f);
+        }
         // slotManager.StopIconAnimation();
         slotManager.PopulateSLotMatrix(socketController.socketModel.resultGameData.resultSymbols);
         currentBalance = socketController.socketModel.playerData.Balance;
@@ -447,10 +450,8 @@ public class GameManager : MonoBehaviour
         if (socketController.socketModel.playerData.currentWining > 0)
         {
 
-            CheckWinPopups(socketController.socketModel.playerData.currentWining);
-
-            winPopUpRoutine = StartCoroutine(uIManager.WinTextAnim(socketController.socketModel.playerData.currentWining));
             winAnimComplete = false;
+            CheckWinPopups(socketController.socketModel.playerData.currentWining);
             yield return new WaitWhile(() => !winAnimComplete);
             winAnimComplete = false;
             if (winPopUpRoutine != null)
@@ -543,30 +544,28 @@ public class GameManager : MonoBehaviour
 
     void CheckWinPopups(double amount)
     {
-        if (amount >= currentTotalBet * 5 && amount < currentTotalBet * 7.5)
+        if(amount >0 && amount<currentTotalBet * 5){
+            uIManager.EnableWinPopUp(0,amount);
+        }
+         else if (amount>=currentTotalBet * 5 && amount <= currentTotalBet * 7.5)
         {
-            uIManager.EnableWinPopUp(1);
+            uIManager.EnableWinPopUp(1,amount);
             audioController.PlayWLAudio("big");
 
         }
         else if (amount >= currentTotalBet * 7.5 && amount < currentTotalBet * 10)
         {
-            uIManager.EnableWinPopUp(2);
+            uIManager.EnableWinPopUp(2,amount);
             audioController.PlayWLAudio("big");
 
         }
         else if (amount >= currentTotalBet * 10)
         {
-            uIManager.EnableWinPopUp(3);
+            uIManager.EnableWinPopUp(3,amount);
             audioController.PlayWLAudio("big");
 
         }
-        else
-        {
-            uIManager.EnableWinPopUp(0);
-            audioController.PlayWLAudio();
 
-        }
     }
 
 

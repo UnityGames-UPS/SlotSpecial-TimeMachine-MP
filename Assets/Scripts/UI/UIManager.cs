@@ -58,7 +58,9 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Sprite[] winTitleSprites;
     [SerializeField] private GameObject WinPopup_Object;
     [SerializeField] private TMP_Text Win_Text;
+    [SerializeField] private TMP_Text SpecialWin_Text;
     [SerializeField] private Button winPopUpExit_Button;
+    Tween WintextTween;
 
 
     [Header("low balance popup")]
@@ -359,23 +361,33 @@ public class UIManager : MonoBehaviour
         if (freeSpinBg.activeSelf)
             freeSpinBg.SetActive(false);
     }
-    internal void EnableWinPopUp(int value)
+    internal void EnableWinPopUp(int type,double value)
     {
 
         OpenPopup(WinPopup_Object);
-        if (value > 0)
+        if (type > 0){
             specialWinObject.SetActive(true);
+            Win_Text.gameObject.SetActive(false);
+        }
+        else{
+            Win_Text.gameObject.SetActive(true);
+        }
 
-        switch (value)
+        switch (type)
         {
+            case 0: StartCoroutine(WinTextAnim(value,false));
+                break;
             case 1:
                 specialWinTitle.sprite = winTitleSprites[0];
+                StartCoroutine(WinTextAnim(value,true));
                 break;
             case 2:
                 specialWinTitle.sprite = winTitleSprites[1];
+                StartCoroutine(WinTextAnim(value,true));
                 break;
             case 3:
                 specialWinTitle.sprite = winTitleSprites[2];
+                StartCoroutine(WinTextAnim(value,true));
                 break;
         }
     }
@@ -394,14 +406,20 @@ public class UIManager : MonoBehaviour
         });
     }
 
-    internal IEnumerator WinTextAnim(double amount)
+    internal IEnumerator WinTextAnim(double amount,bool special)
     {
+        Sequence sequence = DOTween.Sequence();
+        if(!special){
         Win_Text.text = amount.ToString("f3");
         Win_Text.transform.localScale *= 4;
         Color InitCOlor = Win_Text.color;
         Win_Text.color = new Color(0, 0, 0, 0);
-        Win_Text.transform.DOScale(Vector2.one, 1f);
-        Win_Text.DOColor(InitCOlor, 1f);
+        sequence.Append(Win_Text.transform.DOScale(Vector2.one, 1f));
+        sequence.Join(Win_Text.DOColor(InitCOlor, 1f));
+        }else{
+            SpecialWin_Text.text=amount.ToString("f3");
+        }
+        WintextTween=sequence;
         yield return new WaitForSeconds(3f);
         CloseWinPopup();
 
@@ -412,7 +430,7 @@ public class UIManager : MonoBehaviour
         if (specialWinObject.activeSelf)
             specialWinObject.SetActive(false);
         GameManager.winAnimComplete=true;
-        DOTween.Kill(Win_Text.transform);
+        WintextTween?.Kill();
         Win_Text.color=new Color(1,1,1,1);
         Win_Text.transform.localScale=Vector3.one;
     }
