@@ -7,6 +7,7 @@ using System;
 public class GameManager : MonoBehaviour
 {
     [Header("scripts")]
+    [SerializeField] internal JSFunctCalls JSManager;
     [SerializeField] private SlotController slotManager;
     [SerializeField] private UIManager uIManager;
     [SerializeField] private SocketController socketController;
@@ -125,7 +126,9 @@ public class GameManager : MonoBehaviour
             // PayLineCOntroller.paylines = socketController.socketModel.initGameData.lineData;
             uIManager.UpdatePlayerInfo(socketController.socketModel.playerData);
             uIManager.PopulateSymbolsPayout(socketController.socketModel.uIData);
-            Application.ExternalCall("window.parent.postMessage", "OnEnter", "*");
+#if UNITY_WEBGL && !UNITY_EDITOR
+            JSManager.SendCustomMessage("OnEnter");
+#endif
         }
         else
         {
