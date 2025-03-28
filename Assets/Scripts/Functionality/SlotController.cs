@@ -57,7 +57,7 @@ public class SlotController : MonoBehaviour
         for (int i = 0; i < Slot_Transform.Length; i++)
         {
             InitializeTweening(Slot_Transform[i], turboMode);
-                        if (!GameManager.immediateStop)
+            if (!GameManager.immediateStop)
                 yield return new WaitForSeconds(0.1f);
 
         }
@@ -327,7 +327,7 @@ public class SlotController : MonoBehaviour
 
         alltweens[index].Pause();
         slotTransform.localPosition = new Vector2(slotTransform.localPosition.x, initialPos + 265);
-        alltweens[index] = slotTransform.DOLocalMoveY(initialPos, delay).SetEase(Ease.OutElastic); // slot initial pos - iconsizefactor - spacing
+        alltweens[index] = slotTransform.DOLocalMoveY(initialPos, delay).SetEase(Ease.OutElastic);
 
     }
 

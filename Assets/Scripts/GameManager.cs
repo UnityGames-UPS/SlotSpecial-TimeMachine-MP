@@ -7,6 +7,7 @@ using System;
 public class GameManager : MonoBehaviour
 {
     [Header("scripts")]
+    [SerializeField] internal JSFunctCalls JSManager;
     [SerializeField] private SlotController slotManager;
     [SerializeField] private UIManager uIManager;
     [SerializeField] private SocketController socketController;
@@ -67,7 +68,7 @@ public class GameManager : MonoBehaviour
         SetButton(AutoSpin_Button, () =>
         {
             ExecuteAutoSpin();
-            uIManager.ClosePopup();
+            // uIManager.ClosePopup();
         }, true);
         InitiateAutoSpin();
         SetButton(AutoSpinStop_Button, () => StartCoroutine(StopAutoSpinCoroutine()));
@@ -119,11 +120,15 @@ public class GameManager : MonoBehaviour
             currentTotalBet = socketController.socketModel.initGameData.Bets[betCounter];
             currentBalance = socketController.socketModel.playerData.Balance;
             if (totalBet_text) totalBet_text.text = currentTotalBet.ToString();
+            if (currentBalance < currentTotalBet)
+            uIManager.LowBalPopup();
             // if (betPerLine_text) betPerLine_text.text = socketController.socketModel.initGameData.Bets[betCounter].ToString();
             // PayLineCOntroller.paylines = socketController.socketModel.initGameData.lineData;
             uIManager.UpdatePlayerInfo(socketController.socketModel.playerData);
             uIManager.PopulateSymbolsPayout(socketController.socketModel.uIData);
-            Application.ExternalCall("window.parent.postMessage", "OnEnter", "*");
+#if UNITY_WEBGL && !UNITY_EDITOR
+            JSManager.SendCustomMessage("OnEnter");
+#endif
         }
         else
         {
@@ -142,7 +147,7 @@ public class GameManager : MonoBehaviour
             SetButton(AutoSpinOptions_Button[capturedIndex],()=>ExecuteAutoSpin(autoOptions[capturedIndex]));
             AutoSpinOptions_Text[capturedIndex].text=autoOptions[capturedIndex].ToString();
             autoSpinCounter=autoOptions[capturedIndex];
-            uIManager.ClosePopup();
+            // uIManager.ClosePopup();
 
         }
 
@@ -509,8 +514,8 @@ public class GameManager : MonoBehaviour
 
         currentTotalBet = socketController.socketModel.initGameData.Bets[betCounter];
         if (totalBet_text) totalBet_text.text = currentTotalBet.ToString();
-        if (currentBalance < currentTotalBet)
-            uIManager.LowBalPopup();
+        // if (currentBalance < currentTotalBet)
+        //     uIManager.LowBalPopup();
     }
 
     private void OnAutoSpinChange(bool inc)
