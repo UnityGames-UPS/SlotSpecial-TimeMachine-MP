@@ -8407,7 +8407,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isResultdone: 0
-  TestToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3OWEwZjAzNzA4ZDZlOGE0YjZiZGRmYSIsInVzZXJuYW1lIjoibWVodWwtdGVzdCIsInJvbGUiOiJwbGF5ZXIiLCJpYXQiOjE3MzgzMTQ1OTMsImV4cCI6MTczODkxOTM5M30.MTMyqZS3H_Ez2Kv8O__Otn3BbqFcjl2IOipfI_SJzNA
+  TestToken: 96cb5f21e6314b5f8e9d766b1f4e61e7
   JSManager: {fileID: 123995748}
 --- !u!1001 &503428972
 PrefabInstance:
@@ -15750,7 +15750,6 @@ MonoBehaviour:
   currentBalance: 0
   currentTotalBet: 0
   betCounter: 0
-  winIterationCount: 0
   freeSpinCount: 0
   isFreeSpin: 0
   turboMode: 0
@@ -18815,7 +18814,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 963807278}
-  - component: {fileID: 963807277}
   m_Layer: 0
   m_Name: PayoutManager
   m_TagString: Untagged
@@ -18823,18 +18821,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &963807277
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 963807276}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 23c2d218303904f8b89a581d384e3778, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &963807278
 Transform:
   m_ObjectHideFlags: 0
