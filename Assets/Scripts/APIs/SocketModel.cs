@@ -34,7 +34,7 @@ public class Features
 public class FreeSpin
 {
   public int count { get; set; }
-  public int freeSpinLevel { get; set; }
+  public int level { get; set; }
   public bool isFreeSpin { get; set; }
   public bool isLevelUp { get; set; }
 }
@@ -42,7 +42,7 @@ public class FreeSpin
 [Serializable]
 public class Payload
 {
-  public int winAmount { get; set; }
+  public double winAmount { get; set; }
   public List<Win> wins { get; set; }
 }
 

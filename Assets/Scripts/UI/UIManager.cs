@@ -370,7 +370,6 @@ public class UIManager : MonoBehaviour
   }
   internal void EnableWinPopUp(int type, double value)
   {
-
     OpenPopup(WinPopup_Object);
     if (type > 0)
     {
@@ -408,10 +407,8 @@ public class UIManager : MonoBehaviour
     balanceTween = DOTween.To(() => initAmount, (val) => initAmount = val, finalAmount, 0.8f).OnUpdate(() =>
     {
       playerBalance.text = initAmount.ToString("f3");
-
     }).OnComplete(() =>
     {
-
       playerBalance.text = finalAmount.ToString("f3");
     });
   }
@@ -461,7 +458,7 @@ public class UIManager : MonoBehaviour
     if (freespinCount >= 0)
       freeSpinInfo.text = freespinCount.ToString();
     if (winnings >= 0)
-      freeSpinWinnings.text = winnings.ToString();
+      freeSpinWinnings.text = winnings.ToString("F3");
   }
 
   private void ToggleMusic()

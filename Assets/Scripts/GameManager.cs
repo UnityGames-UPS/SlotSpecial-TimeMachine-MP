@@ -345,8 +345,6 @@ public class GameManager : MonoBehaviour
       isSpinning = false;
       ToggleButtonGrp(true);
     }
-
-
   }
 
   IEnumerator StopSpin()
@@ -435,19 +433,18 @@ public class GameManager : MonoBehaviour
       if (specialSpin)
       {
         audioController.PlaySizeUpSound(true);
-        slotManager.ResizeSlotMatrix(socketController.socketModel.resultGameData.features.freeSpin.freeSpinLevel);
+        slotManager.ResizeSlotMatrix(socketController.socketModel.resultGameData.features.freeSpin.level);
         yield return new WaitForSeconds(1.5f);
         audioController.PlaySizeUpSound(false);
       }
       else
       {
-        if (socketController.socketModel.resultGameData.features.freeSpin.freeSpinLevel == 0 && slotManager.level > 0)
+        if (socketController.socketModel.resultGameData.features.freeSpin.level == 0 && slotManager.level > 0)
         {
           audioController.PlaySizeUpSound(true);
           slotManager.ResizeSlotMatrix(0);
           yield return new WaitForSeconds(1.5f);
           audioController.PlaySizeUpSound(false);
-
         }
       }
     }
@@ -463,7 +460,6 @@ public class GameManager : MonoBehaviour
         winPopUpRoutine = null;
       }
       audioController.StopWLAaudio();
-
     }
     if (isFreeSpin)
       uIManager.UpdateFreeSpinInfo(winnings: socketController.socketModel.resultGameData.payload.winAmount);
@@ -473,8 +469,6 @@ public class GameManager : MonoBehaviour
 
     yield return null;
   }
-
-
 
   void ToggleButtonGrp(bool toggle)
   {
@@ -493,7 +487,6 @@ public class GameManager : MonoBehaviour
     if (inc)
     {
       betCounter++;
-
     }
     else
     {
@@ -507,7 +500,6 @@ public class GameManager : MonoBehaviour
     if (betCounter < 0)
     {
       betCounter = socketController.socketModel.initGameData.Bets.Count - 1;
-
     }
 
     currentTotalBet = socketController.socketModel.initGameData.Bets[betCounter];
@@ -540,8 +532,6 @@ public class GameManager : MonoBehaviour
     }
 
     autoSpinShowText.text = autoSpinCounter.ToString();
-
-
   }
 
 
@@ -567,10 +557,6 @@ public class GameManager : MonoBehaviour
     {
       uIManager.EnableWinPopUp(3, amount);
       audioController.PlayWLAudio("big");
-
     }
-
   }
-
-
 }
