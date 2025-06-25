@@ -126,7 +126,7 @@ public class GameManager : MonoBehaviour
       uIManager.UpdatePlayerInfo(socketController.socketModel.playerData);
       uIManager.PopulateSymbolsPayout(socketController.socketModel.uIData);
 #if UNITY_WEBGL && !UNITY_EDITOR
-            JSManager.SendCustomMessage("OnEnter");
+      JSManager.SendCustomMessage("OnEnter");
 #endif
     }
     else

@@ -68,8 +68,8 @@ public class SocketController : MonoBehaviour
     options.ConnectWith = Best.SocketIO.Transports.TransportTypes.WebSocket;
 
 #if UNITY_WEBGL && !UNITY_EDITOR
-        JSManager.SendCustomMessage("authToken");
-        StartCoroutine(WaitForAuthToken(options));
+    JSManager.SendCustomMessage("authToken");
+    StartCoroutine(WaitForAuthToken(options));
 #else
     Func<SocketManager, Socket, object> authFunction = (manager, socket) =>
     {
@@ -168,7 +168,7 @@ public class SocketController : MonoBehaviour
 #if UNITY_EDITOR
     this.manager = new SocketManager(new Uri(TestSocketURI), options);
 #else
-        this.manager = new SocketManager(new Uri(SocketURI), options);
+    this.manager = new SocketManager(new Uri(SocketURI), options);
 #endif
     if (string.IsNullOrEmpty(nameSpace) | string.IsNullOrWhiteSpace(nameSpace))
     {
@@ -201,9 +201,13 @@ public class SocketController : MonoBehaviour
 
   internal void CloseSocket()
   {
-    SendData("EXIT");
+    gameSocket.Disconnect();
+    if (this.manager != null)
+    {
+      this.manager.Close();
+    }
 #if UNITY_WEBGL && !UNITY_EDITOR
-        JSManager.SendCustomMessage("onExit");
+      JSManager.SendCustomMessage("OnExit");
 #endif
   }
 
@@ -244,11 +248,10 @@ public class SocketController : MonoBehaviour
           gameSocket.Disconnect();
           if (this.manager != null)
           {
-            Debug.Log("Dispose my Socket");
             this.manager.Close();
           }
 #if UNITY_WEBGL && !UNITY_EDITOR
-                    JSManager.SendCustomMessage("onExit");
+          JSManager.SendCustomMessage("OnExit");
 #endif
           break;
         }
