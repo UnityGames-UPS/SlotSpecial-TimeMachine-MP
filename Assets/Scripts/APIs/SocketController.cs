@@ -67,21 +67,46 @@ public class SocketController : MonoBehaviour
     options.Reconnection = true;
     options.ConnectWith = Best.SocketIO.Transports.TransportTypes.WebSocket;
 
+    // #if UNITY_WEBGL && !UNITY_EDITOR
+    //     JSManager.SendCustomMessage("authToken");
+    //     StartCoroutine(WaitForAuthToken(options));
+    // #else
+    //     Func<SocketManager, Socket, object> authFunction = (manager, socket) =>
+    //     {
+    //       return new
+    //       {
+    //         token = TestToken
+    //       };
+    //     };
+    //     options.Auth = authFunction;
+    //     // Proceed with connecting to the server
+    //     SetupSocketManager(options);
+    // #endif
 #if UNITY_WEBGL && !UNITY_EDITOR
-    JSManager.SendCustomMessage("authToken");
-    StartCoroutine(WaitForAuthToken(options));
+    string url = Application.absoluteURL;
+    Debug.Log("Unity URL : " + url);
+    ExtractUrlAndToken(url);
+
+    Func<SocketManager, Socket, object> webAuthFunction = (manager, socket) =>
+    {
+      return new
+      {
+        token = TestToken,
+      };
+    };
+    options.Auth = webAuthFunction;
 #else
     Func<SocketManager, Socket, object> authFunction = (manager, socket) =>
     {
       return new
       {
-        token = TestToken
+        token = TestToken,
       };
     };
     options.Auth = authFunction;
+#endif
     // Proceed with connecting to the server
     SetupSocketManager(options);
-#endif
   }
 
   private IEnumerator WaitForAuthToken(SocketOptions options)
@@ -292,6 +317,37 @@ public class SocketController : MonoBehaviour
     }
 
     return Helper.RemoveDuplicates(pos);
+  }
+
+  public void ExtractUrlAndToken(string fullUrl)
+  {
+    Uri uri = new Uri(fullUrl);
+    string query = uri.Query; // Gets the query part, e.g., "?url=http://localhost:5000&token=e5ffa84216be4972a85fff1d266d36d0"
+
+    Dictionary<string, string> queryParams = new Dictionary<string, string>();
+    string[] pairs = query.TrimStart('?').Split('&');
+
+    foreach (string pair in pairs)
+    {
+      string[] kv = pair.Split('=');
+      if (kv.Length == 2)
+      {
+        queryParams[kv[0]] = Uri.UnescapeDataString(kv[1]);
+      }
+    }
+
+    if (queryParams.TryGetValue("url", out string extractedUrl) &&
+        queryParams.TryGetValue("token", out string token))
+    {
+      Debug.Log("Extracted URL: " + extractedUrl);
+      Debug.Log("Extracted Token: " + token);
+      TestToken = token;
+      SocketURI = extractedUrl;
+    }
+    else
+    {
+      Debug.LogError("URL or token not found in query parameters.");
+    }
   }
 }
 
