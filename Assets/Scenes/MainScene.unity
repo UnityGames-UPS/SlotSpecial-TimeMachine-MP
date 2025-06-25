@@ -8842,8 +8842,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Landing on reels 1 or 5 awards 1 extra spin.\n\nWinnings are calculated
-    based on bet per line \nBet per line = Total bet / Number of lines"
+  m_text: 'Landing on reels 1 or 5 awards 1 extra spin.
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 993ff116ce74549679268f1d9a7861ce, type: 2}
   m_sharedMaterial: {fileID: -630791040658660908, guid: 993ff116ce74549679268f1d9a7861ce, type: 2}
@@ -8878,7 +8879,7 @@ MonoBehaviour:
   m_fontSizeMax: 30
   m_fontStyle: 0
   m_HorizontalAlignment: 2
-  m_VerticalAlignment: 256
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -32033,7 +32034,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 30.2
+  m_fontSize: 36
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
