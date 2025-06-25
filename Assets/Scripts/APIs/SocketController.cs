@@ -226,6 +226,7 @@ public class SocketController : MonoBehaviour
 
   internal void CloseSocket()
   {
+    SendData("game:exit");
     gameSocket.Disconnect();
     if (this.manager != null)
     {
