@@ -49,6 +49,7 @@ mergeInto(LibraryManager.library, {
             }
           });
         }
+      //window.parent.dispatchReactUnityEvent(message); 
       window.parent.postMessage(message, "*");
       }
     }
