@@ -47,7 +47,6 @@ public class SocketController : MonoBehaviour
   void ReceiveAuthToken(string jsonData)
   {
     Debug.Log("Received data: " + jsonData);
-
     // Parse the JSON data
     var data = JsonUtility.FromJson<AuthTokenData>(jsonData);
     SocketURI = data.socketURL;
@@ -67,46 +66,46 @@ public class SocketController : MonoBehaviour
     options.Reconnection = true;
     options.ConnectWith = Best.SocketIO.Transports.TransportTypes.WebSocket;
 
-    // #if UNITY_WEBGL && !UNITY_EDITOR
-    //     JSManager.SendCustomMessage("authToken");
-    //     StartCoroutine(WaitForAuthToken(options));
-    // #else
-    //     Func<SocketManager, Socket, object> authFunction = (manager, socket) =>
-    //     {
-    //       return new
-    //       {
-    //         token = TestToken
-    //       };
-    //     };
-    //     options.Auth = authFunction;
-    //     // Proceed with connecting to the server
-    //     SetupSocketManager(options);
-    // #endif
-#if UNITY_WEBGL && !UNITY_EDITOR
-    string url = Application.absoluteURL;
-    Debug.Log("Unity URL : " + url);
-    ExtractUrlAndToken(url);
+    #if UNITY_WEBGL && !UNITY_EDITOR
+        JSManager.SendCustomMessage("authToken");
+        StartCoroutine(WaitForAuthToken(options));
+    #else
+        Func<SocketManager, Socket, object> authFunction = (manager, socket) =>
+        {
+          return new
+          {
+            token = TestToken
+          };
+        };
+        options.Auth = authFunction;
+        // Proceed with connecting to the server
+        SetupSocketManager(options);
+    #endif
+// #if UNITY_WEBGL && !UNITY_EDITOR
+//     string url = Application.absoluteURL;
+//     Debug.Log("Unity URL : " + url);
+//     ExtractUrlAndToken(url);
 
-    Func<SocketManager, Socket, object> webAuthFunction = (manager, socket) =>
-    {
-      return new
-      {
-        token = TestToken,
-      };
-    };
-    options.Auth = webAuthFunction;
-#else
-    Func<SocketManager, Socket, object> authFunction = (manager, socket) =>
-    {
-      return new
-      {
-        token = TestToken,
-      };
-    };
-    options.Auth = authFunction;
-#endif
-    // Proceed with connecting to the server
-    SetupSocketManager(options);
+//     Func<SocketManager, Socket, object> webAuthFunction = (manager, socket) =>
+//     {
+//       return new
+//       {
+//         token = TestToken,
+//       };
+//     };
+//     options.Auth = webAuthFunction;
+// #else
+//     Func<SocketManager, Socket, object> authFunction = (manager, socket) =>
+//     {
+//       return new
+//       {
+//         token = TestToken,
+//       };
+//     };
+//     options.Auth = authFunction;
+// #endif
+//     // Proceed with connecting to the server
+//     SetupSocketManager(options);
   }
 
   private IEnumerator WaitForAuthToken(SocketOptions options)
