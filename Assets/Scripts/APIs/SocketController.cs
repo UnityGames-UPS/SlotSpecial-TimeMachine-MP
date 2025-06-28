@@ -226,14 +226,9 @@ public class SocketController : MonoBehaviour
   internal void CloseSocket()
   {
     SendData("game:exit");
-//     gameSocket.Disconnect();
-//     if (this.manager != null)
-//     {
-//       this.manager.Close();
-//     }
-// #if UNITY_WEBGL && !UNITY_EDITOR
-//       JSManager.SendCustomMessage("OnExit");
-// #endif
+#if UNITY_WEBGL && !UNITY_EDITOR
+    JSManager.SendCustomMessage("OnExit");
+#endif
   }
 
   private void ParseResponse(string jsonObject)
