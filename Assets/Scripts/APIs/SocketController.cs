@@ -16,7 +16,7 @@ public class SocketController : MonoBehaviour
   protected string SocketURI = null;
   // protected string TestSocketURI = "https://game-crm-rtp-backend.onrender.com/";
   // protected string TestSocketURI = "https://7p68wzhv-5000.inc1.devtunnels.ms/";
-  protected string TestSocketURI = "https://sl3l5zz3-5000.inc1.devtunnels.ms/";
+  protected string TestSocketURI = "http://localhost:5000/";
   //protected string SocketURI = "http://localhost:5000";
   [SerializeField] private string TestToken;
   [SerializeField] internal JSFunctCalls JSManager;
@@ -208,7 +208,7 @@ public class SocketController : MonoBehaviour
     gameSocket.On<string>(SocketIOEventTypes.Disconnect, OnDisconnected);
     gameSocket.On<string>(SocketIOEventTypes.Error, OnError);
     gameSocket.On<string>("game:init", OnListenEvent);
-    gameSocket.On<string>("spin:result", OnListenEvent);
+    gameSocket.On<string>("result", OnListenEvent);
     gameSocket.On<bool>("socketState", OnSocketState);
     gameSocket.On<string>("internalError", OnSocketError);
     gameSocket.On<string>("alert", OnSocketAlert);
@@ -281,7 +281,6 @@ public class SocketController : MonoBehaviour
 
   internal void SendData(string eventName, object message = null)
   {
-
     if (gameSocket == null || !gameSocket.IsOpen)
     {
       Debug.LogWarning("Socket is not connected.");

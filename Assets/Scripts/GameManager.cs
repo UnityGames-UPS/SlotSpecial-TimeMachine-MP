@@ -391,8 +391,17 @@ public class GameManager : MonoBehaviour
 
     // Debug.Log("immediate stop" + immediateStop);
 
-    var spinData = new { currentBet = betCounter };
-    socketController.SendData("spin:request", spinData);
+    // var spinData = new { currentBet = betCounter };
+    MessageData msgData = new()
+    {
+      type = "SPIN",
+      payload = new()
+      {
+        betIndex = betCounter
+      }
+    };
+
+    socketController.SendData("request", msgData);
     yield return slotManager.StartSpin(turboMode: turboMode);
     yield return new WaitUntil(() => socketController.isResultdone);
 

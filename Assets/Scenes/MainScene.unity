@@ -8273,7 +8273,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isResultdone: 0
-  TestToken: 6dd52c6e4b304c789bcf10dd248a5863
+  TestToken: e766b36da7ae4395af6ef8df0b4c6fff
   JSManager: {fileID: 123995748}
 --- !u!1001 &503428972
 PrefabInstance:
@@ -30508,7 +30508,7 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_enableWordWrapping: 1
+  m_enableWordWrapping: 0
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}

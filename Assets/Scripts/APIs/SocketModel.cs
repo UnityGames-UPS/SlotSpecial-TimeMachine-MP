@@ -109,8 +109,18 @@ public class AuthData
 [Serializable]
 public class MessageData
 {
-  public BetData data;
-  public string id;
+  public string type = "";
+  public Data payload = new();
+
+}
+[Serializable]
+public class Data
+{
+  public int betIndex = 0;
+  public string Event = "";
+  public List<int> index = new();
+  public int option = 0;
+
 }
 
 [Serializable]
