@@ -6,12 +6,12 @@ using TMPro;
 using System;
 public class UIManager : MonoBehaviour
 {
-
   [Header("AutoSpin Popup")]
   [SerializeField] private Button AutoSpinButton;
   [SerializeField] private Button AutoSpinPopUpClose;
   [SerializeField] private TMP_Text autoSpinCost;
   [SerializeField] private GameObject autoSpinPopupObject;
+
   [Header("Free Spin Popup")]
   [SerializeField] private GameObject FreeSPinPopUpObject;
   [SerializeField] private TMP_Text FreeSpinCount;
@@ -26,7 +26,6 @@ public class UIManager : MonoBehaviour
   [SerializeField] private GameObject payTablePopup_Object;
   [SerializeField] private Button paytableExit_Button;
 
-
   [Header("Paytable Texts")]
   [SerializeField] private TMP_Text[] SymbolsText;
   [SerializeField] private TMP_Text BonusFreeSpins_Text;
@@ -37,9 +36,6 @@ public class UIManager : MonoBehaviour
   [SerializeField] private GameObject[] paytableList;
   [SerializeField] private Button RightBtn;
   [SerializeField] private Button LeftBtn;
-
-
-
 
   [Header("Settings Popup")]
   [SerializeField] private GameObject SettingsPopup_Object;
@@ -62,11 +58,9 @@ public class UIManager : MonoBehaviour
   [SerializeField] private Button winPopUpExit_Button;
   Tween WintextTween;
 
-
   [Header("low balance popup")]
   [SerializeField] private GameObject LowBalancePopup_Object;
   [SerializeField] private Button Close_Button;
-
 
   [Header("disconnection popup")]
   [SerializeField] private GameObject DisconnectPopup_Object;
@@ -79,27 +73,19 @@ public class UIManager : MonoBehaviour
   [SerializeField] private Button yes_Button;
 
   [Header("Splash Screen")]
-  [SerializeField] private GameObject spalsh_screen;
-  [SerializeField] private Image progressbar;
   [SerializeField] private TMP_Text loadingText;
-  [SerializeField]
-  private Button QuitSplash_button;
+  [SerializeField] private Button QuitSplash_button;
 
   [Header("AnotherDevice Popup")]
   [SerializeField] private Button CloseAD_Button;
   [SerializeField] private GameObject ADPopup_Object;
 
   [Header("free spin popup")]
-
   [SerializeField] private TMP_Text freeSpinInfo;
   [SerializeField] private TMP_Text freeSpinWinnings;
-
   [SerializeField] private GameObject freeSpinPanel;
   [SerializeField] private GameObject gameButtonPanel;
   [SerializeField] private Transform freeSpinText;
-
-  [SerializeField]
-  private Button m_AwakeGameButton;
 
   private bool isExit = false;
 
@@ -108,26 +94,10 @@ public class UIManager : MonoBehaviour
   [SerializeField] private TMP_Text playerBalance;
 
   private GameObject currentPopup;
-
   internal Action<bool, string> ToggleAudio;
   internal Action<string> playButtonAudio;
-
   internal Action OnExit;
-
   Tween balanceTween;
-  private void Awake()
-  {
-    //if (spalsh_screen) spalsh_screen.SetActive(true);
-    //StartCoroutine(LoadingRoutine());
-    SimulateClickByDefault();
-  }
-
-  private void SimulateClickByDefault()
-  {
-    Debug.Log("Awaken The Game...");
-    m_AwakeGameButton.onClick.AddListener(() => { Debug.Log("Called The Game..."); });
-    m_AwakeGameButton.onClick.Invoke();
-  }
 
   private void Start()
   {
@@ -139,10 +109,8 @@ public class UIManager : MonoBehaviour
     SetButton(paytableExit_Button, () => ClosePopup());
     SetButton(Settings_Button, () => OpenPopup(SettingsPopup_Object));
     SetButton(SettingsExit_Button, () => ClosePopup());
-
     SetButton(MusicToggle_button, ToggleMusic);
     SetButton(SoundToggle_button, ToggleSound);
-
     SetButton(LeftBtn, () => Slide(false));
     SetButton(RightBtn, () => Slide(true));
     SetButton(CloseDisconnect_Button, CallOnExitFunction);
@@ -150,6 +118,8 @@ public class UIManager : MonoBehaviour
     SetButton(QuitSplash_button, () => OpenPopup(QuitPopupObject));
     SetButton(AutoSpinButton, () => OpenPopup(autoSpinPopupObject));
     SetButton(AutoSpinPopUpClose, () => ClosePopup());
+    SetButton(CloseAD_Button, CallOnExitFunction);
+
     // Initialize other settings
     paytableList[CurrentIndex = 0].SetActive(true);
     isMusic = false;
@@ -172,26 +142,8 @@ public class UIManager : MonoBehaviour
     {
       playButtonAudio?.Invoke("default");
       action?.Invoke();
-
     });
   }
-
-
-
-  // private IEnumerator LoadingRoutine()
-  // {
-  //     StartCoroutine(LoadingTextAnimate());
-  //     float fillAmount = 0.7f;
-  //     progressbar.DOFillAmount(fillAmount, 2f).SetEase(Ease.Linear);
-  //     yield return new WaitForSecondsRealtime(2f);
-  //     yield return new WaitUntil(() => !socketManager.isLoading);
-  //     progressbar.DOFillAmount(1, 1f).SetEase(Ease.Linear);
-  //     yield return new WaitForSecondsRealtime(1f);
-  //     if (spalsh_screen) spalsh_screen.SetActive(false);
-  //     StopCoroutine(LoadingTextAnimate());
-  // }
-
-
 
   internal void UpdatePlayerInfo(PlayerData playerData, Payload payload = null)
   {
@@ -201,22 +153,7 @@ public class UIManager : MonoBehaviour
     else
       playerCurrentWinning.text = "0.000";
     playerBalance.text = playerData.balance.ToString("f3");
-
   }
-
-  private IEnumerator LoadingTextAnimate()
-  {
-    while (true)
-    {
-      if (loadingText) loadingText.text = "Loading.";
-      yield return new WaitForSeconds(0.5f);
-      if (loadingText) loadingText.text = "Loading..";
-      yield return new WaitForSeconds(0.5f);
-      if (loadingText) loadingText.text = "Loading...";
-      yield return new WaitForSeconds(0.5f);
-    }
-  }
-
 
   internal void UpdateAutoSpinCost(double cost)
   {
@@ -278,13 +215,13 @@ public class UIManager : MonoBehaviour
       text = "";
       for (int j = 0; j < uIData.symbols[i].multiplier.Count; j++)
       {
-        // text += $"{5 - j}x - {uIData.symbols[i].multiplier[j][0]+"X"} \n";
+        text += $"{5 - j}x - {uIData.symbols[i].multiplier[j]+"X"} \n";
       }
       SymbolsText[i].text = text;
     }
 
-    // Wild_Text.text = uIData.symbols[10].description.ToString();
-    // BonusFreeSpins_Text.text=uIData.symbols[11].description.ToString();
+    Wild_Text.text = uIData.symbols[10].description;
+    BonusFreeSpins_Text.text=uIData.symbols[11].description;
   }
 
   private void CallOnExitFunction()
