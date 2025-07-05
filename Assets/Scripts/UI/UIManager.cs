@@ -161,22 +161,17 @@ public class UIManager : MonoBehaviour
   }
   internal void LowBalPopup()
   {
-
     OpenPopup(LowBalancePopup_Object);
   }
 
   internal void ToggleFreeSpinPanel(bool toggle)
   {
-
     freeSpinPanel.SetActive(toggle);
     gameButtonPanel.SetActive(!toggle);
-
-
   }
 
   internal void EnablePurplebar(bool enable)
   {
-
     if (enable)
     {
       purpleBar[0].color = Color.white;
@@ -187,17 +182,14 @@ public class UIManager : MonoBehaviour
       purpleBar[0].DOFade(0, 1f);
       purpleBar[1].DOFade(0, 1f);
     }
-
   }
 
   internal void FreeSpinTextAnim()
   {
-
     freeSpinText.localScale *= 0; ;
     freeSpinText.gameObject.SetActive(true);
     freeSpinText.DOScale(2, 0.5f).OnComplete(() =>
     {
-
       freeSpinText.DOScale(0, 0.5f).OnComplete(() => freeSpinText.gameObject.SetActive(false));
     });
 
@@ -228,8 +220,6 @@ public class UIManager : MonoBehaviour
   {
     isExit = true;
     OnExit?.Invoke();
-    // audioController.PlayButtonAudio();
-    // socketManager.CloseSocket();
   }
 
   private void OpenPopup(GameObject Popup)
@@ -241,7 +231,6 @@ public class UIManager : MonoBehaviour
     if (Popup) Popup.SetActive(true);
     if (MainPopup_Object) MainPopup_Object.SetActive(true);
     currentPopup = Popup;
-    // paytableList[CurrentIndex].SetActive(true);
   }
 
   internal void ClosePopup()
@@ -252,17 +241,10 @@ public class UIManager : MonoBehaviour
       {
         currentPopup.SetActive(false);
         if (MainPopup_Object) MainPopup_Object.SetActive(false);
-
         currentPopup = null;
       }
-
     }
-
-    // CurrentIndex=0;
-    // paytableList[CurrentIndex].SetActive(true);
   }
-
-
 
   private void Slide(bool inc)
   {
@@ -271,23 +253,18 @@ public class UIManager : MonoBehaviour
       CurrentIndex++;
       if (CurrentIndex > paytableList.Length - 1)
         CurrentIndex = 0;
-
     }
     else
     {
       CurrentIndex--;
       if (CurrentIndex < 0)
         CurrentIndex = paytableList.Length - 1;
-
     }
     foreach (var item in paytableList)
     {
       item.SetActive(false);
-
     }
     paytableList[CurrentIndex].SetActive(true);
-
-
   }
 
   internal void FreeSpinPopup(int amount, bool enableBg)
@@ -340,7 +317,6 @@ public class UIManager : MonoBehaviour
 
   internal void DeductBalanceAnim(double finalAmount, double initAmount)
   {
-
     balanceTween = DOTween.To(() => initAmount, (val) => initAmount = val, finalAmount, 0.8f).OnUpdate(() =>
     {
       playerBalance.text = initAmount.ToString("f3");
@@ -369,7 +345,6 @@ public class UIManager : MonoBehaviour
     WintextTween = sequence;
     yield return new WaitForSeconds(3f);
     CloseWinPopup();
-
   }
 
   void CloseWinPopup()
@@ -430,5 +405,4 @@ public class UIManager : MonoBehaviour
       ToggleAudio?.Invoke(true, "wl");
     }
   }
-
 }
