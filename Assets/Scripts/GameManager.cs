@@ -209,7 +209,7 @@ public class GameManager : MonoBehaviour
     audioController.PlaySizeUpSound(true);
     uIManager.EnablePurplebar(false);
     yield return new WaitForSeconds(1f);
-    audioController.playBgAudio("FP");
+    audioController.PlayBgAudio("FP");
     audioController.PlaySizeUpSound(false);
 
     uIManager.ToggleFreeSpinPanel(false);
@@ -326,7 +326,7 @@ public class GameManager : MonoBehaviour
       else
       {
         uIManager.FreeSpinPopup(freeSpinCount, true);
-        audioController.playBgAudio("FP");
+        audioController.PlayBgAudio("FP");
         yield return new WaitForSeconds(2f);
         uIManager.CloseFreeSpinPopup();
         freeSpinRoutine = StartCoroutine(FreeSpinRoutine());
@@ -428,7 +428,7 @@ public class GameManager : MonoBehaviour
     if (socketController.socketModel.resultGameData.symbolsToEmit.Count > 0)
     {
       audioController.PlayWLAudio("electric");
-      slotManager.StartIconAnimation(socketController.socketModel.resultGameData.symbolsToEmit, socketController.socketModel.resultGameData.matrix.Count);
+      slotManager.StartIconAnimation(socketController.socketModel.resultGameData.symbolsToEmit);
       yield return new WaitForSeconds(1.5f);
       audioController.StopWLAaudio();
     }
