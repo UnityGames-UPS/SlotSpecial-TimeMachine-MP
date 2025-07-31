@@ -28,10 +28,29 @@ public class SocketController : MonoBehaviour
   [SerializeField] internal bool isResultdone = false;
   [SerializeField] private string TestToken;
   [SerializeField] internal JSFunctCalls JSManager;
+  [SerializeField] private UIManager uiManager;
+  [SerializeField] private GameObject RaycastBlocker;
   string myAuth = null;
   internal SocketModel socketModel = new();
   internal Action OnInit;
   internal Action ShowDisconnectionPopup;
+  private bool isConnected = false; //Back2 Start
+  private bool hasEverConnected = false;
+  private const int MaxReconnectAttempts = 5;
+  private const float ReconnectDelaySeconds = 2f;
+
+  private float lastPongTime = 0f;
+  private float pingInterval = 2f;
+  private bool waitingForPong = false;
+  private int missedPongs = 0;
+  private const int MaxMissedPongs = 5;
+  private Coroutine PingRoutine; //Back2 end
+
+  void CloseGame()
+  {
+    Debug.Log("Unity: Closing Game");
+    StartCoroutine(CloseSocket());
+  }
 
   void ReceiveAuthToken(string jsonData)
   {
@@ -48,9 +67,9 @@ public class SocketController : MonoBehaviour
   {
     // Create and setup SocketOptions
     SocketOptions options = new SocketOptions();
-    options.ReconnectionAttempts = maxReconnectionAttempts;
-    options.ReconnectionDelay = reconnectionDelay;
-    options.Reconnection = true;
+    options.AutoConnect = false;
+    options.Reconnection = false;
+    options.Timeout = TimeSpan.FromSeconds(3);
     options.ConnectWith = Best.SocketIO.Transports.TransportTypes.WebSocket;
 
 #if UNITY_WEBGL && !UNITY_EDITOR
@@ -68,31 +87,6 @@ public class SocketController : MonoBehaviour
     // Proceed with connecting to the server
     SetupSocketManager(options);
 #endif
-    // #if UNITY_WEBGL && !UNITY_EDITOR
-    //     string url = Application.absoluteURL;
-    //     Debug.Log("Unity URL : " + url);
-    //     ExtractUrlAndToken(url);
-
-    //     Func<SocketManager, Socket, object> webAuthFunction = (manager, socket) =>
-    //     {
-    //       return new
-    //       {
-    //         token = TestToken,
-    //       };
-    //     };
-    //     options.Auth = webAuthFunction;
-    // #else
-    //     Func<SocketManager, Socket, object> authFunction = (manager, socket) =>
-    //     {
-    //       return new
-    //       {
-    //         token = TestToken,
-    //       };
-    //     };
-    //     options.Auth = authFunction;
-    // #endif
-    //     // Proceed with connecting to the server
-    //     SetupSocketManager(options);
   }
 
   private IEnumerator WaitForAuthToken(SocketOptions options)
@@ -138,14 +132,17 @@ public class SocketController : MonoBehaviour
     }
     // Set subscriptions
     gameSocket.On<ConnectResponse>(SocketIOEventTypes.Connect, OnConnected);
-    gameSocket.On<string>(SocketIOEventTypes.Disconnect, OnDisconnected);
-    gameSocket.On<string>(SocketIOEventTypes.Error, OnError);
+    gameSocket.On(SocketIOEventTypes.Disconnect, OnDisconnected); //Back2 Start
+    gameSocket.On<Error>(SocketIOEventTypes.Error, OnError);
     gameSocket.On<string>("game:init", OnListenEvent);
     gameSocket.On<string>("result", OnListenEvent);
+    gameSocket.On<string>("pong", OnPongReceived); //Back2 Start
     gameSocket.On<bool>("socketState", OnSocketState);
     gameSocket.On<string>("internalError", OnSocketError);
     gameSocket.On<string>("alert", OnSocketAlert);
     gameSocket.On<string>("AnotherDevice", OnSocketOtherDevice);
+
+    manager.Open();
   }
 
   private void OnSocketState(bool state)
@@ -168,32 +165,46 @@ public class SocketController : MonoBehaviour
     Debug.Log("Received Device Error with data: " + data);
   }
 
-  private void AliveRequest()
+  void OnConnected(ConnectResponse resp) //Back2 Start
   {
-    SendData("YES I AM ALIVE");
-  }
+    Debug.Log("✅ Connected to server.");
 
-  void OnConnected(ConnectResponse resp)
-  {
-    Debug.Log("Connected!");
+    if (hasEverConnected)
+    {
+      uiManager.CheckAndClosePopups();
+    }
+
+    isConnected = true;
+    hasEverConnected = true;
+    waitingForPong = false;
+    missedPongs = 0;
+    lastPongTime = Time.time;
     SendPing();
-  }
+  } //Back2 end
 
-  private void SendPing()
+  private void OnDisconnected() //Back2 Start
   {
-    InvokeRepeating("AliveRequest", 0f, 3f);
-  }
+    Debug.LogWarning("⚠️ Disconnected from server.");
+    isConnected = false;
+    ResetPingRoutine();
+  } //Back2 end
 
-  private void OnDisconnected(string response)
+  private void OnPongReceived(string data) //Back2 Start
   {
-    Debug.Log("Disconnected from the server");
-    StopAllCoroutines();
-    ShowDisconnectionPopup?.Invoke();
-  }
+    Debug.Log("✅ Received pong from server.");
+    waitingForPong = false;
+    missedPongs = 0;
+    lastPongTime = Time.time;
+    Debug.Log($"⏱️ Updated last pong time: {lastPongTime}");
+    Debug.Log($"📦 Pong payload: {data}");
+  } //Back2 end
 
-  private void OnError(string response)
+  private void OnError(Error err)
   {
-    Debug.LogError("Error: " + response);
+    Debug.LogError("Socket Error Message: " + err);
+#if UNITY_WEBGL && !UNITY_EDITOR
+    JSManager.SendCustomMessage("error");
+#endif
   }
 
   private void OnListenEvent(string data)
@@ -201,13 +212,80 @@ public class SocketController : MonoBehaviour
     ParseResponse(data);
   }
 
-  internal void CloseSocket()
+  private void SendPing() //Back2 Start
   {
-    SendData("game:exit");
-#if UNITY_WEBGL && !UNITY_EDITOR
-    JSManager.SendCustomMessage("OnExit");
-#endif
+    ResetPingRoutine();
+    PingRoutine = StartCoroutine(PingCheck());
   }
+
+  void ResetPingRoutine()
+  {
+    if (PingRoutine != null)
+    {
+      StopCoroutine(PingRoutine);
+    }
+    PingRoutine = null;
+  }
+
+  private IEnumerator PingCheck()
+  {
+    while (true)
+    {
+      Debug.Log($"🟡 PingCheck | waitingForPong: {waitingForPong}, missedPongs: {missedPongs}, timeSinceLastPong: {Time.time - lastPongTime}");
+
+      if (missedPongs == 0)
+      {
+        uiManager.CheckAndClosePopups();
+      }
+
+      // If waiting for pong, and timeout passed
+      if (waitingForPong)
+      {
+        if (missedPongs == 2)
+        {
+          uiManager.ReconnectionPopup();
+        }
+        missedPongs++;
+        Debug.LogWarning($"⚠️ Pong missed #{missedPongs}/{MaxMissedPongs}");
+
+        if (missedPongs >= MaxMissedPongs)
+        {
+          Debug.LogError("❌ Unable to connect to server — 5 consecutive pongs missed.");
+          isConnected = false;
+          uiManager.DisconnectionPopup();
+          yield break;
+        }
+      }
+
+      // Send next ping
+      waitingForPong = true;
+      lastPongTime = Time.time;
+      Debug.Log("📤 Sending ping...");
+      SendData("ping");
+      yield return new WaitForSeconds(pingInterval);
+    }
+  } //Back2 end
+
+  internal IEnumerator CloseSocket() //Back2 Start
+  {
+    RaycastBlocker.SetActive(true);
+    ResetPingRoutine();
+
+    Debug.Log("Closing Socket");
+
+    manager?.Close();
+    manager = null;
+
+    Debug.Log("Waiting for socket to close");
+
+    yield return new WaitForSeconds(0.5f);
+
+    Debug.Log("Socket Closed");
+
+#if UNITY_WEBGL && !UNITY_EDITOR
+    JSManager.SendCustomMessage("OnExit"); //Telling the react platform user wants to quit and go back to homepage
+#endif
+  } //Back2 end
 
   private void ParseResponse(string jsonObject)
   {
@@ -226,6 +304,7 @@ public class SocketController : MonoBehaviour
           socketModel.initGameData.Bets = resp["gameData"]["bets"].ToObject<List<double>>();
           // socketModel.initGameData.freeSpinCount = resp["message"]["GameData"]["FreespinBonusCount"].ToObject<int>();
           OnInit?.Invoke();
+          RaycastBlocker.SetActive(false);
           break;
         }
       case "ResultData":
@@ -283,36 +362,5 @@ public class SocketController : MonoBehaviour
     }
 
     return Helper.RemoveDuplicates(pos);
-  }
-
-  public void ExtractUrlAndToken(string fullUrl)
-  {
-    Uri uri = new Uri(fullUrl);
-    string query = uri.Query; // Gets the query part, e.g., "?url=http://localhost:5000&token=e5ffa84216be4972a85fff1d266d36d0"
-
-    Dictionary<string, string> queryParams = new Dictionary<string, string>();
-    string[] pairs = query.TrimStart('?').Split('&');
-
-    foreach (string pair in pairs)
-    {
-      string[] kv = pair.Split('=');
-      if (kv.Length == 2)
-      {
-        queryParams[kv[0]] = Uri.UnescapeDataString(kv[1]);
-      }
-    }
-
-    if (queryParams.TryGetValue("url", out string extractedUrl) &&
-        queryParams.TryGetValue("token", out string token))
-    {
-      Debug.Log("Extracted URL: " + extractedUrl);
-      Debug.Log("Extracted Token: " + token);
-      TestToken = token;
-      SocketURI = extractedUrl;
-    }
-    else
-    {
-      Debug.LogError("URL or token not found in query parameters.");
-    }
   }
 }

@@ -62,6 +62,9 @@ public class UIManager : MonoBehaviour
   [SerializeField] private GameObject LowBalancePopup_Object;
   [SerializeField] private Button Close_Button;
 
+  [Header("Reconnection Popup")]
+  [SerializeField] private GameObject ReconnectionPopup_Object;
+
   [Header("disconnection popup")]
   [SerializeField] private GameObject DisconnectPopup_Object;
   [SerializeField] private Button CloseDisconnect_Button;
@@ -114,7 +117,7 @@ public class UIManager : MonoBehaviour
     SetButton(LeftBtn, () => Slide(false));
     SetButton(RightBtn, () => Slide(true));
     SetButton(CloseDisconnect_Button, CallOnExitFunction);
-    SetButton(Close_Button, ClosePopup);
+    SetButton(Close_Button, () => ClosePopup());
     SetButton(QuitSplash_button, () => OpenPopup(QuitPopupObject));
     SetButton(AutoSpinButton, () => OpenPopup(autoSpinPopupObject));
     SetButton(AutoSpinPopUpClose, () => ClosePopup());
@@ -207,17 +210,18 @@ public class UIManager : MonoBehaviour
       text = "";
       for (int j = 0; j < uIData.symbols[i].multiplier.Count; j++)
       {
-        text += $"{5 - j}x - {uIData.symbols[i].multiplier[j]+"X"} \n";
+        text += $"{5 - j}x - {uIData.symbols[i].multiplier[j] + "X"} \n";
       }
       SymbolsText[i].text = text;
     }
 
     Wild_Text.text = uIData.symbols[10].description;
-    BonusFreeSpins_Text.text=uIData.symbols[11].description;
+    BonusFreeSpins_Text.text = uIData.symbols[11].description;
   }
 
   private void CallOnExitFunction()
   {
+    if (isExit) return;
     isExit = true;
     OnExit?.Invoke();
   }
@@ -233,8 +237,13 @@ public class UIManager : MonoBehaviour
     currentPopup = Popup;
   }
 
-  internal void ClosePopup()
+  internal void ClosePopup(GameObject popup = null)
   {
+    if (popup != null)
+    {
+      if (MainPopup_Object) MainPopup_Object.SetActive(false);
+      popup.SetActive(false);
+    }
     if (!DisconnectPopup_Object.activeSelf)
     {
       if (currentPopup != null)
@@ -365,6 +374,21 @@ public class UIManager : MonoBehaviour
     }
   }
 
+  internal void ReconnectionPopup()
+  {
+    OpenPopup(ReconnectionPopup_Object);
+  }
+  internal void CheckAndClosePopups()
+  {
+    if (ReconnectionPopup_Object.activeInHierarchy)
+    {
+      ClosePopup(ReconnectionPopup_Object);
+    }
+    if (DisconnectPopup_Object.activeInHierarchy)
+    {
+      ClosePopup(DisconnectPopup_Object);
+    }
+  }
   internal void UpdateFreeSpinInfo(int freespinCount = -1, double winnings = -1)
   {
     if (freespinCount >= 0)

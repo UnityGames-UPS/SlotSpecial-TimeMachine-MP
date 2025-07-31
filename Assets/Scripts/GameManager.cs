@@ -76,7 +76,7 @@ public class GameManager : MonoBehaviour
     socketController.OnInit = InitGame;
     uIManager.ToggleAudio = audioController.ToggleMute;
     uIManager.playButtonAudio = audioController.PlayButtonAudio;
-    uIManager.OnExit = () => socketController.CloseSocket();
+    uIManager.OnExit = () => StartCoroutine(socketController.CloseSocket());
     socketController.ShowDisconnectionPopup = uIManager.DisconnectionPopup;
 
     socketController.OpenSocket();
